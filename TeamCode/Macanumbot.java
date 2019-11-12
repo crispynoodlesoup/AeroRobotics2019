@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.Range;
 
 /**
- * TeleOp for mechanumbot with CRServo and intake system
+ * TeleOp for mechanumbot with servo and intake system
  */
 
 @TeleOp(name="Mecanumbot", group="Linear Opmode")
@@ -15,6 +15,11 @@ public class Mecanum_Linear extends LinearOpMode {
 
     // Declare runtime
     private ElapsedTime runtime = new ElapsedTime();
+    
+    //access the control hub's instruments
+    BNO055IMU imu;
+    Orientation angle;
+    Acceleration gravity;
     
     //Declare hardware variables
     private DcMotor leftFront   = null;
@@ -24,12 +29,36 @@ public class Mecanum_Linear extends LinearOpMode {
     private DcMotor intakeLeft  = null;
     private DcMotor intakeRight = null;
     private Servo   servoArm    = null;
-
+    
+    //init variables for movement
+    private double forward;
+    private double turn;
+    private double strafe;
+    private double leftF;
+    private double rightF;
+    private double leftR;
+    private double rightR;
+    private boolean sneak       = false;
+    private boolean toggleSneak = false;
+    private boolean sneakPrev;
+    private double varSneak;
+    private boolean succ;
+    private boolean yeet;
+    
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
+        //parameters we're sending to the imu
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
         leftFront   = hardwareMap.get(DcMotor.class, "left_front");
@@ -39,7 +68,19 @@ public class Mecanum_Linear extends LinearOpMode {
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
         servoArm    = hardwareMap.get(Servo.class,   "servoArm");
-
+        
+        //set all motors to work with encoders
+        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        intakeRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        
+        //init imu
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
+        
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftFront.setDirection(DcMotor.Direction.FORWARD);
@@ -51,46 +92,64 @@ public class Mecanum_Linear extends LinearOpMode {
         
         //set arm to 0 at initialization
         servoArm.setPosition(0);
+        
+        //setup telemetry
+        setupTelemetry();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
         
-        //initialize some sneak variables for future use
-        boolean sneak       = false;
-        boolean toggleSneak = false;
-
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             
             // Setup a variable for variables to determine mecanum spin
-            double forward = -gamepad1.left_stick_y;
-            double turn = gamepad1.right_stick_x;
-            double strafe = gamepad1.left_stick_x;
-            boolean sneakPrev = sneak;
-            sneak = gamepad1.left_stick_button;
-            double varSneak = gamepad1.right_trigger;
-
-            //math for mecanum wheels
-            double leftF = forward + turn + strafe;
-            double rightF = forward - turn - strafe;
-            double leftR = forward + turn - strafe;
-            double rightR = forward - turn + strafe;
-        
-            //logic for Sneaking
-            varSneak = Range.clip(varSneak, 0, 0.85);
+            forward   = -gamepad1.left_stick_y;
+            turn      = gamepad1.right_stick_x;
+            strafe    = gamepad1.left_stick_x;
+            sneakPrev = sneak;
+            sneak     = gamepad1.left_stick_button;
+            varSneak  = gamepad1.right_trigger;
+            
+            //logic for toggleSneak, if stick is pressed invert
             if(sneak && !sneakPrev)
                 toggleSneak = !toggleSneak;
-            if(toggleSneak) {
-                leftF = Range.clip(leftF, -0.4, 0.4);
+            
+            //all lateral movement
+            moveLateral(forward, turn, strafe, varSneak, toggleSneak);
+            
+            //code for intake
+            suck   = gamepad1.left_bumper;
+            unsuck = gamepad1.right_bumper;
+            intake(suck, unsuck);
+
+        	//basically all the code for servo lol
+    	    servoArm.setPosition(gamepad1.left_trigger);
+            
+            // Show the elapsed game time and wheel power.
+            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.update();
+        }
+    }
+    public void moveLateral(double f, double t, double s, double vs, boolean ts) {
+            //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
+            leftF  = f + t + s;
+            rightF = f - t - s;
+            leftR  = f + t - s;
+            rightR = f - t + s;
+            
+            //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
+            vs = Range.clip(vs, 0, 0.85);
+            if(ts) {
+                leftF  = Range.clip(leftF, -0.4, 0.4);
                 rightF = Range.clip(rightF, -0.4, 0.4);
-                leftR = Range.clip(leftR, -0.4, 0.4);
+                leftR  = Range.clip(leftR, -0.4, 0.4);
                 rightR = Range.clip(rightR, -0.4, 0.4);
             } else {
-                leftF = Range.clip(leftF, -1 + varSneak, 1 - varSneak);
-                rightF = Range.clip(rightF, -1 + varSneak, 1 - varSneak);
-                leftR = Range.clip(leftR, -1 + varSneak, 1 - varSneak);
-                rightR = Range.clip(rightR, -1 + varSneak, 1 - varSneak);
+                leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
+                rightF = Range.clip(rightF, -1 + vs, 1 - vs);
+                leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
+                rightR = Range.clip(rightR, -1 + vs, 1 - vs);
             }
             
             //set power for mecanum wheels
@@ -98,30 +157,36 @@ public class Mecanum_Linear extends LinearOpMode {
             rightFront.setPower(rightF);
             leftRear.setPower(leftR);
             rightRear.setPower(rightR);
-            
-            //variables for intake
-            boolean succ = gamepad1.left_bumper;
-            boolean yeet = gamepad1.right_bumper;
-            
-            //logic for intake system
-            if(succ && !unsucc) {
-                intakeLeft.setPower(0.6);
-                intakeRight.setPower(0.6);
-            } else if(yeet && !succ) {
-                intakeLeft.setPower(-1.0);
-                intakeRight.setPower(-1.0);
-            } else {
-                intakeLeft.setPower(0.0);
-                intakeRight.setPower(0.0);
-            }
-
-        	//basically all the code for servo lol
-    	    servoArm.setPosition(gamepad1.left_trigger);
-            
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            //telemetry.addData("Motors", "leftF (%.2f), rightF (%.2f), leftR (%.2f), rightR (%.2f), intakeLeft (%.2f), intakeRight (%.2f)", leftF, rightF, leftR, rightR, intakeLeft, intakeRight);
-            telemetry.update();
+    }
+    public void intake(double succ, double yeet) {
+        //logic for intake system
+        if(succ && !yeet) {
+            intakeLeft.setPower(0.6);
+            intakeRight.setPower(0.6);
+        } else if(yeet && !succ) {
+            intakeLeft.setPower(-1.0);
+            intakeRight.setPower(-1.0);
+        } else {
+            intakeLeft.setPower(0.0);
+            intakeRight.setPower(0.0);
         }
+    }
+    public void setupTelemetry() {
+        telemetry.addLine()
+            .addData("heading", new Func<String>() {
+                @Override public String value() {
+                    return formatAngle(angles.angleUnit, angles.firstAngle);
+                    }
+                })
+            .addData("roll", new Func<String>() {
+                @Override public String value() {
+                    return formatAngle(angles.angleUnit, angles.secondAngle);
+                    }
+                })
+            .addData("pitch", new Func<String>() {
+                @Override public String value() {
+                    return formatAngle(angles.angleUnit, angles.thirdAngle);
+                    }
+                });
     }
 }
