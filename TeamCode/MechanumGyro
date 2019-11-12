@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.util.Range;
  * TeleOp for mechanumbot with servo and intake system
  */
 
-@TeleOp(name="Mecanumbot", group="Linear Opmode")
+@TeleOp(name="Gyrobot", group="Linear Opmode")
 public class Mecanum_Linear extends LinearOpMode {
 
     // Declare runtime
