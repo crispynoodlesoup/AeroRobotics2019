@@ -38,7 +38,7 @@ public class Mecanum_Linear extends LinearOpMode {
         rightRear   = hardwareMap.get(DcMotor.class, "right_rear");
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
-        servoArm    = hardwareMap.get(Servo.class, "servoArm");
+        servoArm    = hardwareMap.get(Servo.class,   "servoArm");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -56,6 +56,7 @@ public class Mecanum_Linear extends LinearOpMode {
         waitForStart();
         runtime.reset();
         
+        //initialize some sneak variables for future use
         boolean sneak       = false;
         boolean toggleSneak = false;
 
@@ -80,7 +81,7 @@ public class Mecanum_Linear extends LinearOpMode {
             varSneak = Range.clip(varSneak, 0, 0.85);
             if(sneak && !sneakPrev)
                 toggleSneak = !toggleSneak;
-            if(toggleSneak)
+            if(toggleSneak) {
                 leftF = Range.clip(leftF, -0.4, 0.4);
                 rightF = Range.clip(rightF, -0.4, 0.4);
                 leftR = Range.clip(leftR, -0.4, 0.4);
