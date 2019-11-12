@@ -18,7 +18,7 @@ public class Mecanum_Linear extends LinearOpMode {
     
     //access the control hub's instruments
     BNO055IMU imu;
-    Orientation angle;
+    Orientation angle = new Orientation();
     Acceleration gravity;
     
     //Declare hardware variables
@@ -44,6 +44,9 @@ public class Mecanum_Linear extends LinearOpMode {
     private double varSneak;
     private boolean succ;
     private boolean yeet;
+    private double target = 0;
+    private double angleError;
+    private double pid;
     
     @Override
     public void runOpMode() {
@@ -80,6 +83,15 @@ public class Mecanum_Linear extends LinearOpMode {
         //init imu
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+        telemetry.addData("Mode", "calibrating...");
+        telemetry.update();
+
+        // make sure the imu gyro is calibrated before continuing.
+        while (!isStopRequested() && !imu.isGyroCalibrated())
+        {
+            sleep(50);
+            idle();
+        }
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -125,6 +137,12 @@ public class Mecanum_Linear extends LinearOpMode {
 
         	//basically all the code for servo lol
     	    servoArm.setPosition(gamepad1.left_trigger);
+            
+            //gyro stuff
+            angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            globalAngle = (angle.firstAngle+360)%360;
+            angleError = target - globalAngle;
+            pid = 0.0025*angleError;
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -172,6 +190,16 @@ public class Mecanum_Linear extends LinearOpMode {
         }
     }
     public void setupTelemetry() {
+        telemetry.addAction(new Runnable() { @Override public void run()
+                {
+                // Acquiring the angles is relatively expensive; we don't want
+                // to do that in each of the three items that need that info, as that's
+                // three times the necessary expense.
+                angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                gravity  = imu.getGravity();
+                }
+            });
+        
         telemetry.addLine()
             .addData("heading", new Func<String>() {
                 @Override public String value() {
@@ -188,5 +216,12 @@ public class Mecanum_Linear extends LinearOpMode {
                     return formatAngle(angles.angleUnit, angles.thirdAngle);
                     }
                 });
+    }
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees){
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
     }
 }
