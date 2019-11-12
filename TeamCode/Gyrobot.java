@@ -1,24 +1,37 @@
 package org.firstinspires.ftc.teamcode;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import org.firstinspires.ftc.robotcore.external.Func;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
+import java.util.Locale;
 
 /**
- * TeleOp for mechanumbot with servo and intake system
+ * TeleOp for gyrobot with servo and intake system
  */
 
 @TeleOp(name="Gyrobot", group="Linear Opmode")
-public class Mecanum_Linear extends LinearOpMode {
+public class Gyrobot extends LinearOpMode {
 
     // Declare runtime
     private ElapsedTime runtime = new ElapsedTime();
     
     //access the control hub's instruments
     BNO055IMU imu;
-    Orientation angle = new Orientation();
+    Orientation angle;
     Acceleration gravity;
     
     //Declare hardware variables
@@ -44,9 +57,8 @@ public class Mecanum_Linear extends LinearOpMode {
     private double varSneak;
     private boolean succ;
     private boolean yeet;
-    private double target = 0;
-    private double angleError;
-    private double pid;
+    private boolean suck;
+    private boolean unsuck;
     
     @Override
     public void runOpMode() {
@@ -83,15 +95,6 @@ public class Mecanum_Linear extends LinearOpMode {
         //init imu
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        telemetry.addData("Mode", "calibrating...");
-        telemetry.update();
-
-        // make sure the imu gyro is calibrated before continuing.
-        while (!isStopRequested() && !imu.isGyroCalibrated())
-        {
-            sleep(50);
-            idle();
-        }
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -135,14 +138,8 @@ public class Mecanum_Linear extends LinearOpMode {
             unsuck = gamepad1.right_bumper;
             intake(suck, unsuck);
 
-        	//basically all the code for servo lol
-    	    servoArm.setPosition(gamepad1.left_trigger);
-            
-            //gyro stuff
-            angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            globalAngle = (angle.firstAngle+360)%360;
-            angleError = target - globalAngle;
-            pid = 0.0025*angleError;
+            //basically all the code for servo lol
+            servoArm.setPosition(gamepad1.left_trigger);
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -176,7 +173,7 @@ public class Mecanum_Linear extends LinearOpMode {
             leftRear.setPower(leftR);
             rightRear.setPower(rightR);
     }
-    public void intake(double succ, double yeet) {
+    public void intake(boolean succ, boolean yeet) {
         //logic for intake system
         if(succ && !yeet) {
             intakeLeft.setPower(0.6);
@@ -190,30 +187,32 @@ public class Mecanum_Linear extends LinearOpMode {
         }
     }
     public void setupTelemetry() {
+        // At the beginning of each telemetry update, grab a bunch of data
+        // from the IMU that we will then display in separate lines.
         telemetry.addAction(new Runnable() { @Override public void run()
                 {
                 // Acquiring the angles is relatively expensive; we don't want
                 // to do that in each of the three items that need that info, as that's
                 // three times the necessary expense.
-                angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-                gravity  = imu.getGravity();
+                angle   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+                gravity = imu.getGravity();
                 }
             });
-        
+            
         telemetry.addLine()
             .addData("heading", new Func<String>() {
                 @Override public String value() {
-                    return formatAngle(angles.angleUnit, angles.firstAngle);
+                    return formatAngle(angle.angleUnit, angle.firstAngle);
                     }
                 })
             .addData("roll", new Func<String>() {
                 @Override public String value() {
-                    return formatAngle(angles.angleUnit, angles.secondAngle);
+                    return formatAngle(angle.angleUnit, angle.secondAngle);
                     }
                 })
             .addData("pitch", new Func<String>() {
                 @Override public String value() {
-                    return formatAngle(angles.angleUnit, angles.thirdAngle);
+                    return formatAngle(angle.angleUnit, angle.thirdAngle);
                     }
                 });
     }
