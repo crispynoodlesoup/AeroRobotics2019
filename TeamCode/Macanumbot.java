@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.Range;
  * TeleOp for mechanumbot with CRServo and intake system
  */
 
-
 @TeleOp(name="Mecanumbot", group="Linear Opmode")
 public class Mecanum_Linear extends LinearOpMode {
 
@@ -24,7 +23,7 @@ public class Mecanum_Linear extends LinearOpMode {
     private DcMotor rightRear   = null;
     private DcMotor intakeLeft  = null;
     private DcMotor intakeRight = null;
-    private CRServo servoArm    = null;
+    private Servo   servoArm    = null;
 
     @Override
     public void runOpMode() {
@@ -39,7 +38,7 @@ public class Mecanum_Linear extends LinearOpMode {
         rightRear   = hardwareMap.get(DcMotor.class, "right_rear");
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
-        servoArm    = hardwareMap.get(CRServo.class, "servoArm");
+        servoArm    = hardwareMap.get(Servo.class, "servoArm");
 
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -49,6 +48,9 @@ public class Mecanum_Linear extends LinearOpMode {
         rightRear.setDirection(DcMotor.Direction.REVERSE);
         intakeLeft.setDirection(DcMotor.Direction.FORWARD);
         intakeRight.setDirection(DcMotor.Direction.REVERSE);
+        
+        //set arm to 0 at initialization
+        servoArm.setPosition(0);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -98,13 +100,13 @@ public class Mecanum_Linear extends LinearOpMode {
             
             //variables for intake
             boolean succ = gamepad1.left_bumper;
-            boolean unsucc = gamepad1.right_bumper;
+            boolean yeet = gamepad1.right_bumper;
             
             //logic for intake system
             if(succ && !unsucc) {
                 intakeLeft.setPower(0.6);
                 intakeRight.setPower(0.6);
-            } else if(unsucc && !succ) {
+            } else if(yeet && !succ) {
                 intakeLeft.setPower(-1.0);
                 intakeRight.setPower(-1.0);
             } else {
@@ -112,12 +114,8 @@ public class Mecanum_Linear extends LinearOpMode {
                 intakeRight.setPower(0.0);
             }
 
-            //variables for arm
-            double clawoffset = 0;
-            double clockwise = gamepad1.right_trigger;
-            double counterClockwise = gamepad1.left_trigger;
-
-    	    claw
+        	//basically all the code for servo lol
+    	    servoArm.setPosition(gamepad1.left_trigger);
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -126,4 +124,3 @@ public class Mecanum_Linear extends LinearOpMode {
         }
     }
 }
-
