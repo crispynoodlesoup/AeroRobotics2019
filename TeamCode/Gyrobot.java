@@ -60,6 +60,7 @@ public class Gyrobot extends LinearOpMode {
     private boolean suck;
     private boolean unsuck;
     
+    
     @Override
     public void runOpMode() {
         telemetry.addData("Status", "Initialized");
@@ -95,6 +96,9 @@ public class Gyrobot extends LinearOpMode {
         //init imu
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+        
+        angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        globalAngle = 0;
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -140,6 +144,11 @@ public class Gyrobot extends LinearOpMode {
 
             //basically all the code for servo lol
             servoArm.setPosition(gamepad1.left_trigger);
+            
+            //get global angle
+            angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            globalAngle = (myRobot.angle.firstAngle+360)%360;
+            
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
