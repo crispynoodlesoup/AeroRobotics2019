@@ -19,7 +19,7 @@ public class GeneratedAuto extends LinearOpMode {
         //28 * 20 / (2ppi * 4.125)
         Double width = 18.0; //inches
         Integer cpr = 383.6; //counts per rotation
-        Integer gearratio = 20;
+        Integer gearratio = 13.7;
         Double diameter = 3.937;
         Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
         Double bias = 0.8;//default 0.8
