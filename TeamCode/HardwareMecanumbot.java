@@ -71,14 +71,6 @@ public class HardwareTestbot
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
         servoArm    = hardwareMap.get(Servo.class,   "servoArm");
         
-        //set all motors to work with encoders
-        leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intakeLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        intakeRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        
         //init imu
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
