@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 public class GeneratedAuto extends LinearOpMode {
         //28 * 20 / (2ppi * 4.125)
         Double width = 18.0; //inches
-        Integer cpr = 538; //counts per rotation
+        Integer cpr = 383.6; //counts per rotation
         Integer gearratio = 20;
         Double diameter = 3.937;
         Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
