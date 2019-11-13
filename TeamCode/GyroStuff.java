@@ -34,13 +34,18 @@ public class GyroMath {
     private double elaspsedTime, time, timePrev;
     private double period = 1;
     
-    //variables for the PID systems
-    double kP = 0.005;
-    double kI = 0.001;
-    double kD = 0.05;
-    //actual PID outputs
-    double PID_p, PID_i = 0, PID_d = 0, PID_total;
     //make current heading the zero
+    
+    public GyroMath() { }
+
+    public void initDrive(HardwareTestbot robo) {
+        myRobot = robo;
+        time = runtime.seconds();
+    }
+    public calcPID() {
+    	angle_error = getError(target_Angle);
+		angle
+    }
     void resetAngle() {
         myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         globalAngle = 0;
