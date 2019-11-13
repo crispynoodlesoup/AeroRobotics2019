@@ -83,9 +83,6 @@ public class HardwareTestbot
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
         
-        angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        globalAngle = 0;
-        
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftFront.setDirection(DcMotor.Direction.FORWARD);
