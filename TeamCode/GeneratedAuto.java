@@ -18,132 +18,130 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 public class GeneratedAuto extends LinearOpMode {
         //28 * 20 / (2ppi * 4.125)
         Double width = 18.0; //inches
-        Integer cpr = 383.6; //counts per rotation
-        Integer gearratio = 13.7;
+        Double cpr = 383.6; //counts per rotation
+        Double gearratio = 13.7;
         Double diameter = 3.937;
         Double cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, 28cpr * gear ratio / (2 * pi * diameter (in inches, in the center))
-        Double bias = 0.8;//default 0.8
-        Double meccyBias = 0.9;//change to adjust only strafing movement
+        Double bias = 0.8;
+        Double meccyBias = 0.8;//change to adjust only strafing movement
         Double conversion = cpi * bias;
         Boolean exit = false;
         ElapsedTime runtime = new ElapsedTime();
-        GyroMath gyro = new GyroMath();
-        HardwareTestbot robot = new HardwareTestbot();
+        GyroStuff gyro = new GyroStuff();
+        HardwareMecanumbot robot = new HardwareMecanumbot();
         @Override
         public void runOpMode(){
                 robot.initDrive(this);
                 gyro.initDrive(robot);
-
+                
+                robot.servoArm.setPosition(0);
+                
                 waitForStart();
                 //
-                moveToPosition(25.8, 0.5);
+                //moveToPosition(10.0, 0.8);
                 //
-                strafeToPosition(24.4, 0.5);
+                strafeToPosition(-8.1, 0.8);
                 //
-                moveToPosition(-4.4, 0.5);
+                robot.servoArm.setPosition(1);
+                sleep(1000);
                 //
-                strafeToPosition(-107.4, 0.5);
+                strafeToPosition(5.0, 0.8);
                 //
-                moveToPosition(5.4, 0.5);
+                moveToPosition(50.0, 0.9);
                 //
-                moveToPosition(-27, 0.5);
+                robot.servoArm.setPosition(0);
+                sleep(1000);
                 //
-                strafeToPosition(29.6, 0.5);
+                moveToPosition(-10.0, 0.8);
                 //
-                moveToPosition(26, 0.5);
+                strafeToPosition(-5.0, 0.8);
                 //
-                strafeToPosition(19.0, 0.5);
+                robot.servoArm.setPosition(1);
+                sleep(1000);
                 //
+                strafeToPosition(5.0, 0.8);
+                //
+                moveToPosition(18.0, 0.9);
                 }
         public void moveToPosition(double inches, double speed){
                 //
                 int move = (int)(Math.round(inches*conversion));
                 //
-                robot.RLeft.setTargetPosition(robot.RLeft.getCurrentPosition() + move);
-                robot.FLeft.setTargetPosition(robot.FLeft.getCurrentPosition() + move);
-                robot.RRight.setTargetPosition(robot.RRight.getCurrentPosition() + move);
-                robot.RLeft.setTargetPosition(robot.RLeft.getCurrentPosition() + move);
+                robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
+                robot.rightFront.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
+                robot.leftRear.setTargetPosition(robot.leftRear.getCurrentPosition() + move);
+                robot.rightRear.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
                 //
-                robot.FLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //
-                robot.FLeft.setPower(speed);
-                robot.RLeft.setPower(speed);
-                robot.RLeft.setPower(speed);
-                robot.RRight.setPower(speed);
+                robot.leftFront.setPower(speed);
+                robot.rightFront.setPower(speed);
+                robot.leftRear.setPower(speed);
+                robot.rightRear.setPower(speed);
                 //
-                while (robot.FLeft.isBusy() && robot.RLeft.isBusy() && robot.RLeft.isBusy() && robot.RRight.isBusy()){
-                if (exit){
-                robot.RLeft.setPower(0);
-                robot.FLeft.setPower(0);
-                robot.RRight.setPower(0);
-                robot.RLeft.setPower(0);
+                while (robot.leftRear.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.rightRear.isBusy()){
+                if (exit) {
+                robot.leftFront.setPower(0);
+                robot.rightFront.setPower(0);
+                robot.leftRear.setPower(0);
+                robot.rightRear.setPower(0);
                 return;
                 }
                 }
-                robot.RLeft.setPower(0);
-                robot.FLeft.setPower(0);
-                robot.RRight.setPower(0);
-                robot.RLeft.setPower(0);
+                robot.leftFront.setPower(0);
+                robot.rightFront.setPower(0);
+                robot.leftRear.setPower(0);
+                robot.rightRear.setPower(0);
                 return;
                 }
         public void turnWithGyro(double degrees,double time){
                 runtime.reset();
                 while(gyro.getError(degrees)>2 || runtime.seconds() > time){
                         double spin = gyro.calcPID(degrees);
-                        double FLPow = spin;
-                        double FRPow = spin;
-                        double RLPow = spin;
-                        double RRPow = spin;
+
                         // normalize all motor speeds so no values exceeds 100%.
-                        FLPow = Range.clip(FLPow, -robot.MAX_POWER, robot.MAX_POWER);
-                        FRPow = Range.clip(FRPow, -robot.MAX_POWER, robot.MAX_POWER);
-                        RLPow = Range.clip(RLPow, -robot.MAX_POWER, robot.MAX_POWER);
-                        RRPow = Range.clip(RRPow, -robot.MAX_POWER, robot.MAX_POWER);
+                        spin = Range.clip(spin, -1, 1);
+
                         // Set drive motor power levels.
-                        robot.FLeft.setPower(FLPow);
-                        robot.RLeft.setPower(FRPow);
-                        robot.RLeft.setPower(RLPow);
-                        robot.RRight.setPower(RRPow);
+                        robot.leftFront.setPower(spin);
+                        robot.rightFront.setPower(spin);
+                        robot.leftRear.setPower(spin);
+                        robot.rightRear.setPower(spin);
                 }
         }
         public void strafeToPosition(double inches, double speed){
                 //
                 int move = (int)(Math.round(inches * cpi * meccyBias));
                 //
-                robot.RLeft.setTargetPosition(robot.RLeft.getCurrentPosition() - move);
-                robot.FLeft.setTargetPosition(robot.FLeft.getCurrentPosition() + move);
-                robot.RRight.setTargetPosition(robot.RRight.getCurrentPosition() + move);
-                robot.RLeft.setTargetPosition(robot.RLeft.getCurrentPosition() - move);
+                robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
+                robot.rightFront.setTargetPosition(robot.rightFront.getCurrentPosition() - move);
+                robot.leftRear.setTargetPosition(robot.leftRear.getCurrentPosition() - move);
+                robot.rightRear.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
                 //
-                robot.FLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.RRight.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //
-                robot.FLeft.setPower(speed);
-                robot.RLeft.setPower(speed);
-                robot.RLeft.setPower(speed);
-                robot.RRight.setPower(speed);
+                robot.leftFront.setPower(speed);
+                robot.rightFront.setPower(speed);
+                robot.leftRear.setPower(speed);
+                robot.rightRear.setPower(speed);
                 //
-                while (robot.FLeft.isBusy() && robot.RLeft.isBusy() && robot.RLeft.isBusy() && robot.RRight.isBusy()){}
-                robot.RLeft.setPower(0);
-                robot.FLeft.setPower(0);
-                robot.RRight.setPower(0);
-                robot.RLeft.setPower(0);
+                while (robot.leftRear.isBusy() && robot.rightFront.isBusy() && robot.leftFront.isBusy() && robot.rightRear.isBusy()){}
+                robot.leftFront.setPower(0);
+                robot.rightFront.setPower(0);
+                robot.leftRear.setPower(0);
+                robot.rightRear.setPower(0);
                 return;
-                }
+        }
         public void turnWithEncoder(double input){
-                robot.FLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.RLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                robot.RRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-                //
-                robot.FLeft.setPower(input);
-                robot.RLeft.setPower(input);
-                robot.RLeft.setPower(-input);
-                robot.RRight.setPower(-input);
+                robot.leftFront.setPower(input);
+                robot.rightFront.setPower(input);
+                robot.leftRear.setPower(input);
+                robot.rightRear.setPower(input);
         }
 }
