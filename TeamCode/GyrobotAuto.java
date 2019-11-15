@@ -1,3 +1,4 @@
+
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -47,7 +48,7 @@ import java.util.Locale;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="gyrobot by Encoder", group="Pushbot")
+@Autonomous(name="Gyrobot Auto", group="Pushbot")
 
 public class GyrobotAuto extends LinearOpMode {
 
@@ -73,22 +74,25 @@ public class GyrobotAuto extends LinearOpMode {
          * Initialize the drive system variables.
          * The init() method of the hardware class does all the work here
          */
-        robot.init(hardwareMap);
+        robot.initDrive(this);
+        gyro.initDrive(robot);
 
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Resetting Encoders");    //
         telemetry.update();
-
+        
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
+        robot.servoArm.setPosition(0.5);
         sleep(1000);     // pause for servos to move
-        
-        robot.servoArm.setPosition(1);
 
         while (isStarted()) {
             //CONVENTIONS USED COUNTERCLOCKWISE IS NEGATIVE TURN ----- CLOCKWISE IS POSITIVE TURN
-            robot.moveLateral(0, gyro.calcPID, 0, 0, false);
+            robot.moveLateral(0, gyro.calcPID(0), 0, 0, false);
+            
+            telemetry.addData("Status", "Resetting Encoders");
+            telemetry.addData("pidcalc", "%.2f", gyro.calcPID(0));
             telemetry.update();
         }
 
