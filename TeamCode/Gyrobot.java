@@ -59,7 +59,7 @@ public class Gyrobot extends LinearOpMode {
     private boolean yeet;
     private boolean suck;
     private boolean unsuck;
-    
+    private double globalAngle;
     
     @Override
     public void runOpMode() {
@@ -147,8 +147,7 @@ public class Gyrobot extends LinearOpMode {
             
             //get global angle
             angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            globalAngle = (myRobot.angle.firstAngle+360)%360;
-            
+            globalAngle = (angle.firstAngle+360)%360;
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
