@@ -31,7 +31,7 @@ public class GeneratedAuto extends LinearOpMode {
     HardwareMecanumbot robot = new HardwareMecanumbot();
     @Override
     public void runOpMode(){
-	    robot.initDrive(this);
+	robot.initDrive(this);
 		gyro.initDrive(robot);
 		robot.servoArm.setPosition(0);
                 
