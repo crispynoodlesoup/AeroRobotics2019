@@ -32,54 +32,52 @@ public class GeneratedAuto extends LinearOpMode {
     @Override
     public void runOpMode(){
 	robot.initDrive(this);
-		gyro.initDrive(robot);
-		robot.servoArm.setPosition(0);
+	gyro.initDrive(robot);
+	robot.servoArm.setPosition(0);
                 
-		waitForStart();
+	waitForStart();
                 
-		//moveToPosition(10.0, 0.8);
+	//moveToPosition(10.0, 0.8);
         strafeToPosition(-8.1, 0.8);
-		robot.servoArm.setPosition(1);
-		sleep(1000);
-		strafeToPosition(5.0, 0.8);
-		moveToPosition(50.0, 0.9);
-		robot.servoArm.setPosition(0);
-		sleep(1000);
-		moveToPosition(-10.0, 0.8);
-		strafeToPosition(-5.0, 0.8);
-		robot.servoArm.setPosition(1);
-		sleep(1000);
-		strafeToPosition(5.0, 0.8);
-		moveToPosition(18.0, 0.9);
+	robot.servoArm.setPosition(1);
+	sleep(1000);
+	strafeToPosition(5.0, 0.8);
+	moveToPosition(50.0, 0.9);
+	robot.servoArm.setPosition(0);
+	sleep(1000);
+	moveToPosition(-10.0, 0.8);
+	strafeToPosition(-5.0, 0.8);
+	robot.servoArm.setPosition(1);
+	sleep(1000);
+	strafeToPosition(5.0, 0.8);
+	moveToPosition(18.0, 0.9);
     }
     public void moveToPosition(double inches, double speed){
-        
         int move = (int)(Math.round(inches*conversion));
-		
-
-		robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
-		robot.rightFront.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
-		robot.leftRear.setTargetPosition(robot.leftRear.getCurrentPosition() + move);
-		robot.rightRear.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
-                
-		robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-		
-		robot.leftFront.setPower(speed);
-		robot.rightFront.setPower(speed);
-		robot.leftRear.setPower(speed);
-		robot.rightRear.setPower(speed);
+	    
+	robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
+	robot.rightFront.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
+	robot.leftRear.setTargetPosition(robot.leftRear.getCurrentPosition() + move);
+	robot.rightRear.setTargetPosition(robot.rightRear.getCurrentPosition() + move);
         
-		while (robot.leftRear.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.rightRear.isBusy()){
+	robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+	robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+	robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+	robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+	
+	robot.leftFront.setPower(speed);
+	robot.rightFront.setPower(speed);
+	robot.leftRear.setPower(speed);
+	robot.rightRear.setPower(speed);
+        
+	while (robot.leftRear.isBusy() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.rightRear.isBusy()){
         robot.leftFront.setPower(0);
         robot.rightFront.setPower(0);
         robot.leftRear.setPower(0);
         robot.rightRear.setPower(0);
 	}
     public void turnWithGyro(double degrees,double time){
-		runtime.reset();
+	runtime.reset();
         while(gyro.getError(degrees)>2 || runtime.seconds() > time){
             double spin = gyro.calcPID(degrees);
 			
