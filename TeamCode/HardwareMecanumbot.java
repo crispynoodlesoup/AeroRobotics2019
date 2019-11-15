@@ -107,31 +107,31 @@ public class HardwareMecanumbot
         intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void moveLateral(double f, double t, double s, double vs, boolean ts) {
-            //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
-            leftF  = f + t + s;
-            rightF = f - t - s;
-            leftR  = f + t - s;
-            rightR = f - t + s;
-            
-            //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
-            vs = Range.clip(vs, 0, 0.85);
-            if(ts) {
-                leftF  = Range.clip(leftF, -0.4, 0.4);
-                rightF = Range.clip(rightF, -0.4, 0.4);
-                leftR  = Range.clip(leftR, -0.4, 0.4);
-                rightR = Range.clip(rightR, -0.4, 0.4);
-            } else {
-                leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
-                rightF = Range.clip(rightF, -1 + vs, 1 - vs);
-                leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
-                rightR = Range.clip(rightR, -1 + vs, 1 - vs);
-            }
-            
-            //set power for mecanum wheels
-            leftFront.setPower(leftF);
-            rightFront.setPower(rightF);
-            leftRear.setPower(leftR);
-            rightRear.setPower(rightR);
+        //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
+        leftF  = f + t + s;
+        rightF = f - t - s;
+        leftR  = f + t - s;
+        rightR = f - t + s;
+        
+        //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
+        vs = Range.clip(vs, 0, 0.85);
+        if(ts) {
+            leftF  = Range.clip(leftF, -0.4, 0.4);
+            rightF = Range.clip(rightF, -0.4, 0.4);
+            leftR  = Range.clip(leftR, -0.4, 0.4);
+            rightR = Range.clip(rightR, -0.4, 0.4);
+        } else {
+            leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
+            rightF = Range.clip(rightF, -1 + vs, 1 - vs);
+            leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
+            rightR = Range.clip(rightR, -1 + vs, 1 - vs);
+        }
+        
+        //set power for mecanum wheels
+        leftFront.setPower(leftF);
+        rightFront.setPower(rightF);
+        leftRear.setPower(leftR);
+        rightRear.setPower(rightR);
     }
     public void intake(boolean succ, boolean yeet) {
         //logic for intake system
