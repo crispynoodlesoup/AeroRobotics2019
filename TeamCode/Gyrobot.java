@@ -41,7 +41,9 @@ public class Gyrobot extends LinearOpMode {
     private DcMotor rightRear   = null;
     private DcMotor intakeLeft  = null;
     private DcMotor intakeRight = null;
+    private DcMotor lift        = null;
     private Servo   servoArm    = null;
+    private Servo   servoGrab   = null;
     
     //init variables for movement
     private double forward;
@@ -51,9 +53,9 @@ public class Gyrobot extends LinearOpMode {
     private double rightF;
     private double leftR;
     private double rightR;
-    private boolean sneak       = false;
-    private boolean toggleSneak = false;
-    private boolean sneakPrev;
+    private boolean grab       = false;
+    private boolean toggleGrab = false;
+    private boolean grabPrev;
     private double varSneak;
     private boolean succ;
     private boolean yeet;
@@ -83,8 +85,11 @@ public class Gyrobot extends LinearOpMode {
         rightRear   = hardwareMap.get(DcMotor.class, "right_rear");
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
+        lift        = hardwareMap.get(DcMotor.class, "lift");
         servoArm    = hardwareMap.get(Servo.class,   "servoArm");
+        servoGrab   = hardwareMap.get(Servo.class,   "servoGrab");
         
+        lift.setTargetPosition(lift.getCurrentPosition());
         //set all motors to work with encoders
         leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -92,6 +97,7 @@ public class Gyrobot extends LinearOpMode {
         rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         intakeRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         
         //init imu
         imu = hardwareMap.get(BNO055IMU.class, "imu");
@@ -108,9 +114,11 @@ public class Gyrobot extends LinearOpMode {
         rightRear.setDirection(DcMotor.Direction.REVERSE);
         intakeLeft.setDirection(DcMotor.Direction.FORWARD);
         intakeRight.setDirection(DcMotor.Direction.REVERSE);
+        lift.setDirection(DcMotor.Direction.FORWARD);
         
         //set arm to 0 at initialization
         servoArm.setPosition(0);
+        servoGrab.setPosition(0);
         
         //setup telemetry
         setupTelemetry();
@@ -121,21 +129,22 @@ public class Gyrobot extends LinearOpMode {
         
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            
             // Setup a variable for variables to determine mecanum spin
             forward   = -gamepad1.left_stick_y;
             turn      = gamepad1.right_stick_x;
             strafe    = gamepad1.left_stick_x;
-            sneakPrev = sneak;
-            sneak     = gamepad1.left_stick_button;
+            grabPrev = grab;
+            grab     = gamepad1.left_stick_button;
             varSneak  = gamepad1.right_trigger;
             
             //logic for toggleSneak, if stick is pressed invert
-            if(sneak && !sneakPrev)
-                toggleSneak = !toggleSneak;
+            if(grab && !grabPrev)
+                toggleGrab = !toggleGrab;
             
             //all lateral movement
-            moveLateral(forward, turn, strafe, varSneak, toggleSneak);
+            moveLateral(forward, turn, strafe, varSneak);
+            
+            lift(gamepad1.dpad_up, gamepad1.dpad_down);
             
             //code for intake
             suck   = gamepad1.left_bumper;
@@ -144,6 +153,11 @@ public class Gyrobot extends LinearOpMode {
 
             //basically all the code for servo lol
             servoArm.setPosition(gamepad1.left_trigger);
+            
+            if(toggleGrab)
+                servoGrab.setPosition(0.9);
+            else
+                servoGrab.setPosition(1);
             
             //get global angle
             angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -154,26 +168,19 @@ public class Gyrobot extends LinearOpMode {
             telemetry.update();
         }
     }
-    public void moveLateral(double f, double t, double s, double vs, boolean ts) {
+    public void moveLateral(double f, double t, double s, double vs) {
             //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
             leftF  = f + t + s;
             rightF = f - t - s;
             leftR  = f + t - s;
             rightR = f - t + s;
             
-            //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
+            //logic for Sneaking 'vs' = variable sneak
             vs = Range.clip(vs, 0, 0.85);
-            if(ts) {
-                leftF  = Range.clip(leftF, -0.4, 0.4);
-                rightF = Range.clip(rightF, -0.4, 0.4);
-                leftR  = Range.clip(leftR, -0.4, 0.4);
-                rightR = Range.clip(rightR, -0.4, 0.4);
-            } else {
-                leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
-                rightF = Range.clip(rightF, -1 + vs, 1 - vs);
-                leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
-                rightR = Range.clip(rightR, -1 + vs, 1 - vs);
-            }
+            leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
+            rightF = Range.clip(rightF, -1 + vs, 1 - vs);
+            leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
+            rightR = Range.clip(rightR, -1 + vs, 1 - vs);
             
             //set power for mecanum wheels
             leftFront.setPower(leftF);
@@ -181,14 +188,33 @@ public class Gyrobot extends LinearOpMode {
             leftRear.setPower(leftR);
             rightRear.setPower(rightR);
     }
+    public void lift(boolean up, boolean down) {
+        if(up && !down) {
+            lift.setTargetPosition(lift.getCurrentPosition() - 25);
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        }
+        else if(down && !up) {
+            lift.setTargetPosition(lift.getCurrentPosition() + 25);
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        } else {
+            lift.setTargetPosition(lift.getCurrentPosition());
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        }
+    }
     public void intake(boolean succ, boolean yeet) {
         //logic for intake system
         if(succ && !yeet) {
-            intakeLeft.setPower(0.6);
-            intakeRight.setPower(0.6);
+            intakeLeft.setPower(1.0);
+            intakeRight.setPower(1.0);
         } else if(yeet && !succ) {
-            intakeLeft.setPower(-1.0);
-            intakeRight.setPower(-1.0);
+            intakeLeft.setPower(-0.5);
+            intakeRight.setPower(-0.5);
         } else {
             intakeLeft.setPower(0.0);
             intakeRight.setPower(0.0);
