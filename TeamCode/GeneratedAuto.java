@@ -36,12 +36,14 @@ public class GeneratedAuto extends LinearOpMode {
 	robot.servoArm.setPosition(0);
                 
 	waitForStart();
-                
+    
 	//moveToPosition(10.0, 0.8);
-        strafeToPosition(-8.1, 0.8);
+    strafeToPosition(-8.1, 0.8);
 	robot.servoArm.setPosition(1);
 	sleep(1000);
 	strafeToPosition(5.0, 0.8);
+	while(100 < robot.cSensor.alpha() && robot.cSensor.alpha() < 400 && !isStopRequested())
+		robot.moveLateral(0,0,0.2,0);
 	moveToPosition(50.0, 0.9);
 	robot.servoArm.setPosition(0);
 	sleep(1000);
@@ -113,11 +115,11 @@ public class GeneratedAuto extends LinearOpMode {
         robot.rightFront.setPower(0);
         robot.leftRear.setPower(0);
         robot.rightRear.setPower(0);
-        }
-        public void turnWithEncoder(double input){
-            robot.leftFront.setPower(input);
-            robot.rightFront.setPower(input);
-            robot.leftRear.setPower(input);
-            robot.rightRear.setPower(input);
-        }
+    }
+    public void turnWithEncoder(double input){
+        robot.leftFront.setPower(input);
+        robot.rightFront.setPower(input);
+        robot.leftRear.setPower(input);
+        robot.rightRear.setPower(input);
+    }
 }
