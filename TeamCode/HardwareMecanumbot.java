@@ -21,10 +21,11 @@ public class HardwareMecanumbot
     private LinearOpMode myOpMode;
     private ElapsedTime period  = new ElapsedTime();
     
-    //access instruments of Hub
+    //access instruments of Hub and other hardware
     BNO055IMU imu;
     Orientation angle;
     Acceleration gravity;
+	ColorSensor color_sensor;
     
     // motor declarations
     public DcMotor leftFront  = null;
@@ -33,10 +34,11 @@ public class HardwareMecanumbot
     public DcMotor rightRear  = null;
     public DcMotor intakeLeft = null;
     public DcMotor intakeRight = null;
+    public DcMotor lift = null;
     
     // motor for arm
-    public Servo   servoArm = null;
-    public DcMotor Arm     = null;
+    public Servo servoArm = null;
+    public Servo servoGrab = null;
     
     //variables
     private double leftF;
@@ -72,11 +74,15 @@ public class HardwareMecanumbot
         rightRear   = myOpMode.hardwareMap.get(DcMotor.class, "right_rear");
         intakeLeft  = myOpMode.hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = myOpMode.hardwareMap.get(DcMotor.class, "intake_right");
+        lift        = myOpMode.hardwareMap.get(DcMotor.class, "lift");
         servoArm    = myOpMode.hardwareMap.get(Servo.class,   "servoArm");
+        servoGrab   = myOpMode.hardwareMap.get(Servo.class,   "servoGrab");
         
-        //init imu
+        //init imu & color sensor
         imu = myOpMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
+		color_sensor = hardwareMap.colorSensor.get("color");
+		color_sensor.enableLed(false)
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -92,11 +98,13 @@ public class HardwareMecanumbot
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+       	lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         
         //brake the motors
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -105,13 +113,14 @@ public class HardwareMecanumbot
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void moveLateral(double f, double t, double s, double vs, boolean ts) {
         //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
         leftF  = f + t + s;
         rightF = f - t - s;
         leftR  = f + t - s;
-        rightR = f - t + s;
+        rightR = 	f - t + s;
         
         //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
         vs = Range.clip(vs, 0, 0.85);
@@ -132,6 +141,25 @@ public class HardwareMecanumbot
         rightFront.setPower(rightF);
         leftRear.setPower(leftR);
         rightRear.setPower(rightR);
+    }
+	public void lift(boolean up, boolean down) {
+		if(up && !down) {
+            lift.setTargetPosition(lift.getCurrentPosition() - 25);
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        }
+        else if(down && !up) {
+            lift.setTargetPosition(lift.getCurrentPosition() + 25);
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        } else {
+            lift.setTargetPosition(lift.getCurrentPosition());
+            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(1);
+            //while(lift.isBusy()){}
+        }
     }
     public void intake(boolean succ, boolean yeet) {
         //logic for intake system
