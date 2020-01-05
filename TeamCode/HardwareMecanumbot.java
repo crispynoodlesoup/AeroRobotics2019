@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -21,11 +23,11 @@ public class HardwareMecanumbot
     private LinearOpMode myOpMode;
     private ElapsedTime period  = new ElapsedTime();
     
-    //access instruments of Hub and other hardware
+    //access instruments of Hub
     BNO055IMU imu;
     Orientation angle;
     Acceleration gravity;
-	ColorSensor color_sensor;
+    //ColorSensor color_sensor;
     
     // motor declarations
     public DcMotor leftFront  = null;
@@ -37,7 +39,7 @@ public class HardwareMecanumbot
     public DcMotor lift = null;
     
     // motor for arm
-    public Servo servoArm = null;
+    public CRServo servoArm = null;
     public Servo servoGrab = null;
     
     //variables
@@ -45,6 +47,7 @@ public class HardwareMecanumbot
     private double rightF;
     private double leftR;
     private double rightR;
+    private int neg = 1;
 
     public HardwareMecanumbot(){
     }
@@ -75,14 +78,14 @@ public class HardwareMecanumbot
         intakeLeft  = myOpMode.hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = myOpMode.hardwareMap.get(DcMotor.class, "intake_right");
         lift        = myOpMode.hardwareMap.get(DcMotor.class, "lift");
-        servoArm    = myOpMode.hardwareMap.get(Servo.class,   "servoArm");
+        servoArm    = myOpMode.hardwareMap.get(CRServo.class,   "servoArm");
         servoGrab   = myOpMode.hardwareMap.get(Servo.class,   "servoGrab");
         
-        //init imu & color sensor
+        //init imu
         imu = myOpMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-		color_sensor = hardwareMap.colorSensor.get("color");
-		color_sensor.enableLed(false)
+        //color_sensor = myOpMode.hardwareMap.colorSensor.get("color");
+        //color_sensor.enableLed(false);
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
@@ -98,13 +101,7 @@ public class HardwareMecanumbot
         rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-       	lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        
-        leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         
         //brake the motors
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -113,37 +110,42 @@ public class HardwareMecanumbot
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
-    public void moveLateral(double f, double t, double s, double vs, boolean ts) {
-        //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
-        leftF  = f + t + s;
-        rightF = f - t - s;
-        leftR  = f + t - s;
-        rightR = 	f - t + s;
-        
-        //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
-        vs = Range.clip(vs, 0, 0.85);
-        if(ts) {
-            leftF  = Range.clip(leftF, -0.4, 0.4);
-            rightF = Range.clip(rightF, -0.4, 0.4);
-            leftR  = Range.clip(leftR, -0.4, 0.4);
-            rightR = Range.clip(rightR, -0.4, 0.4);
-        } else {
+    public void moveLateral(double f, double t, double s, double vs) {
+            //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
+            leftF  = f + t + s;
+            rightF = f - t - s;
+            leftR  = f + t - s;
+            rightR = f - t + s;
+            
+            //logic for Sneaking 'vs' = variable sneak, 'ts' = toggle sneak
+            vs = Range.clip(vs, 0, 0.85);
             leftF  = Range.clip(leftF, -1 + vs, 1 - vs);
             rightF = Range.clip(rightF, -1 + vs, 1 - vs);
             leftR  = Range.clip(leftR, -1 + vs, 1 - vs);
             rightR = Range.clip(rightR, -1 + vs, 1 - vs);
-        }
-        
-        //set power for mecanum wheels
-        leftFront.setPower(leftF);
-        rightFront.setPower(rightF);
-        leftRear.setPower(leftR);
-        rightRear.setPower(rightR);
+            
+            //set power for mecanum wheels
+            leftFront.setPower(leftF);
+            rightFront.setPower(rightF);
+            leftRear.setPower(leftR);
+            rightRear.setPower(rightR);
     }
-	public void lift(boolean up, boolean down) {
-		if(up && !down) {
+    public void servoMove(double degrees) {
+        if(degrees < 0) {
+            neg = -1;
+            degrees *= -1;
+        } else
+            neg = 1;
+            
+        double moveTime = degrees/180.0;
+        period.reset();
+        while(period.time() < moveTime)
+            servoArm.setPower(1*neg);
+        servoArm.setPower(0);
+    }
+    public void lift(boolean up, boolean down) {
+        if(up && !down) {
             lift.setTargetPosition(lift.getCurrentPosition() - 25);
             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             lift.setPower(1);
@@ -161,14 +163,20 @@ public class HardwareMecanumbot
             //while(lift.isBusy()){}
         }
     }
+    public void liftPos(int pos) {
+        lift.setTargetPosition(pos);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lift.setPower(1);
+        while(lift.isBusy()){}
+    }
     public void intake(boolean succ, boolean yeet) {
         //logic for intake system
         if(succ && !yeet) {
-            intakeLeft.setPower(0.6);
-            intakeRight.setPower(0.6);
+            intakeLeft.setPower(0.4);
+            intakeRight.setPower(0.4);
         } else if(yeet && !succ) {
-            intakeLeft.setPower(-1.0);
-            intakeRight.setPower(-1.0);
+            intakeLeft.setPower(-0.6);
+            intakeRight.setPower(-0.6);
         } else {
             intakeLeft.setPower(0.0);
             intakeRight.setPower(0.0);
