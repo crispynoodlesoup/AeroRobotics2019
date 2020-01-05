@@ -1,4 +1,3 @@
-
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -21,44 +20,15 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 import java.util.Locale;
 
-/**
- * This file illustrates the concept of driving a path based on encoder counts.
- * It uses the common Pushbot hardware class to define the drive on the robot.
- * The code is structured as a LinearOpMode
- *
- * The code REQUIRES that you DO have encoders on the wheels,
- *   otherwise you would use: PushbotAutoDriveByTime;
- *
- *  This code ALSO requires that the drive Motors have been configured such that a positive
- *  power command moves them forwards, and causes the encoders to count UP.
- *
- *   The desired path in this example is:
- *   - Drive forward for 48 inches
- *   - Spin right for 12 Inches
- *   - Drive Backwards for 24 inches
- *   - Stop and close the claw.
- *
- *  The code is written using a method called: encoderDrive(speed, leftInches, rightInches, timeoutS)
- *  that performs the actual movement.
- *  This methods assumes that each movement is relative to the last stopping place.
- *  There are other ways to perform encoder based moves, but this method is probably the simplest.
- *  This code uses the RUN_TO_POSITION mode to enable the Motor controllers to generate the run profile
- *
- * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
- */
-
 @Autonomous(name="Gyrobot Auto", group="Pushbot")
 
 public class GyrobotAuto extends LinearOpMode {
-
-    /* Declare OpMode members. */
     HardwareMecanumbot      robot   = new HardwareMecanumbot();   // Use a Pushbot's hardware
     private ElapsedTime     runtime = new ElapsedTime();
     
     GyroStuff gyro = new GyroStuff();
 
-    static final double     COUNTS_PER_MOTOR_REV    = 537.6 ;    // eg: TETRIX Motor Encoder
+    static final double     COUNTS_PER_MOTOR_REV    = 383.6 ;    // eg: TETRIX Motor Encoder
     static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
     static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
     static final double     BIAS                    = 0.5 ;
@@ -70,10 +40,6 @@ public class GyrobotAuto extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        /*
-         * Initialize the drive system variables.
-         * The init() method of the hardware class does all the work here
-         */
         robot.initDrive(this);
         gyro.initDrive(robot);
 
@@ -84,12 +50,11 @@ public class GyrobotAuto extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        robot.servoArm.setPosition(0.5);
         sleep(1000);     // pause for servos to move
 
         while (isStarted()) {
             //CONVENTIONS USED COUNTERCLOCKWISE IS NEGATIVE TURN ----- CLOCKWISE IS POSITIVE TURN
-            robot.moveLateral(0, gyro.calcPID(0), 0, 0, false);
+            robot.moveLateral(0, gyro.calcPID(0), 0, 0);
             
             telemetry.addData("Status", "Resetting Encoders");
             telemetry.addData("pidcalc", "%.2f", gyro.calcPID(0));
