@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -42,7 +43,7 @@ public class Gyrobot extends LinearOpMode {
     private DcMotor intakeLeft  = null;
     private DcMotor intakeRight = null;
     private DcMotor lift        = null;
-    private Servo   servoArm    = null;
+    private CRServo servoArm    = null;
     private Servo   servoGrab   = null;
     
     //init variables for movement
@@ -86,7 +87,7 @@ public class Gyrobot extends LinearOpMode {
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
         lift        = hardwareMap.get(DcMotor.class, "lift");
-        servoArm    = hardwareMap.get(Servo.class,   "servoArm");
+        servoArm    = hardwareMap.get(CRServo.class, "servoArm");
         servoGrab   = hardwareMap.get(Servo.class,   "servoGrab");
         
         lift.setTargetPosition(lift.getCurrentPosition());
@@ -117,8 +118,7 @@ public class Gyrobot extends LinearOpMode {
         lift.setDirection(DcMotor.Direction.FORWARD);
         
         //set arm to 0 at initialization
-        servoArm.setPosition(0);
-        servoGrab.setPosition(0);
+        servoGrab.setPosition(1);
         
         //setup telemetry
         setupTelemetry();
@@ -134,7 +134,7 @@ public class Gyrobot extends LinearOpMode {
             turn      = gamepad1.right_stick_x;
             strafe    = gamepad1.left_stick_x;
             grabPrev = grab;
-            grab     = gamepad1.left_stick_button;
+            grab     = gamepad1.a;
             varSneak  = gamepad1.right_trigger;
             
             //logic for toggleSneak, if stick is pressed invert
@@ -152,7 +152,12 @@ public class Gyrobot extends LinearOpMode {
             intake(suck, unsuck);
 
             //basically all the code for servo lol
-            servoArm.setPosition(gamepad1.left_trigger);
+            if(gamepad1.dpad_right && !gamepad1.dpad_left)
+                servoArm.setPower(-0.5);
+            else if(gamepad1.dpad_left && !gamepad1.dpad_right)
+                servoArm.setPower(0.5);
+            else
+                servoArm.setPower(0);
             
             if(toggleGrab)
                 servoGrab.setPosition(0.9);
@@ -164,7 +169,7 @@ public class Gyrobot extends LinearOpMode {
             globalAngle = (angle.firstAngle+360)%360;
             
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
+            telemetry.addData("Status", lift.getCurrentPosition());
             telemetry.update();
         }
     }
@@ -190,13 +195,13 @@ public class Gyrobot extends LinearOpMode {
     }
     public void lift(boolean up, boolean down) {
         if(up && !down) {
-            lift.setTargetPosition(lift.getCurrentPosition() - 25);
+            lift.setTargetPosition(lift.getCurrentPosition() - 100);
             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             lift.setPower(1);
             //while(lift.isBusy()){}
         }
         else if(down && !up) {
-            lift.setTargetPosition(lift.getCurrentPosition() + 25);
+            lift.setTargetPosition(lift.getCurrentPosition() + 100);
             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             lift.setPower(1);
             //while(lift.isBusy()){}
@@ -206,6 +211,11 @@ public class Gyrobot extends LinearOpMode {
             lift.setPower(1);
             //while(lift.isBusy()){}
         }
+    }
+    public void liftPos(int pos) {
+        lift.setTargetPosition(pos);
+        lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lift.setPower(1);
     }
     public void intake(boolean succ, boolean yeet) {
         //logic for intake system
