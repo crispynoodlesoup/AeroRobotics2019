@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode;
+
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
@@ -14,37 +15,35 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 
-public class GyroMath {
+public class GyroStuff {
     //define class members
     private ElapsedTime runtime = new ElapsedTime();
-    private HardwareTestbot myRobot;
+    private HardwareMecanumbot myRobot;
     
     //angle variables
     private double globalAngle;
-    double target_Angle = 0;
-    private double prev_angle_error = 0;
-    double angle_error;
-    
-    //distance variables - LATER
-    double distance = 0;
-    double prev_dist_error, dist_error;
-    double target_Distance = 1;
+    double targetAngle = 0;
+    double angleError;
     
     //timing
     private double elaspsedTime, time, timePrev;
     private double period = 1;
     
     //make current heading the zero
-    
-    public GyroMath() { }
+    public GyroStuff() { }
 
-    public void initDrive(HardwareTestbot robo) {
+    public void initDrive(HardwareMecanumbot robo) {
         myRobot = robo;
         time = runtime.seconds();
     }
-    public calcPID() {
-    	angle_error = getError(target_Angle);
-		angle
+    public double calcPID(double target) {
+        angleError = target - getGlobalAngle();
+        if(Math.abs(angleError) > 5)
+            return angleError*0.005;
+        return 0;
+    }
+    public double getError(double target){
+        return target - getGlobalAngle();
     }
     void resetAngle() {
         myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
