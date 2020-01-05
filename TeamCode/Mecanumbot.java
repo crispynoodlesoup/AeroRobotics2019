@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -27,7 +29,7 @@ public class Mecanum_Linear extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
+        //telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         // Initialize the hardware variables. Note that the strings used here as parameters
@@ -49,14 +51,14 @@ public class Mecanum_Linear extends LinearOpMode {
         intakeLeft.setDirection(DcMotor.Direction.FORWARD);
         intakeRight.setDirection(DcMotor.Direction.REVERSE);
         
-        //set arm to 0 at initialization
+        //initialize servo at pos 0
         servoArm.setPosition(0);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
         
-        //initialize some sneak variables for future use
+        // initialize variables for sneak
         boolean sneak       = false;
         boolean toggleSneak = false;
 
@@ -101,22 +103,22 @@ public class Mecanum_Linear extends LinearOpMode {
             
             //variables for intake
             boolean succ = gamepad1.left_bumper;
-            boolean yeet = gamepad1.right_bumper;
+            boolean unsucc = gamepad1.right_bumper;
             
             //logic for intake system
             if(succ && !unsucc) {
-                intakeLeft.setPower(0.6);
-                intakeRight.setPower(0.6);
-            } else if(yeet && !succ) {
-                intakeLeft.setPower(-1.0);
-                intakeRight.setPower(-1.0);
+                intakeLeft.setPower(0.5);
+                intakeRight.setPower(0.5);
+            } else if(unsucc && !succ) {
+                intakeLeft.setPower(-0.7);
+                intakeRight.setPower(-0.7);
             } else {
                 intakeLeft.setPower(0.0);
                 intakeRight.setPower(0.0);
             }
-
-        	//basically all the code for servo lol
-    	    servoArm.setPosition(gamepad1.left_trigger);
+            
+            //basically all the servo code lol
+            servoArm.setPosition(gamepad1.left_trigger);
             
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
