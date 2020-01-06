@@ -21,20 +21,15 @@ public class GyroStuff {
     private HardwareMecanumbot myRobot;
     
     //angle variables
-    private double globalAngle;
     double angleError;
-    
-    //timing
-    private double elaspsedTime, time;
-    private double period = 1;
     
     //make current heading the zero
     public GyroStuff() { }
 
     public void initDrive(HardwareMecanumbot robo) {
         myRobot = robo;
-        time = runtime.seconds();
     }
+    
     public double calcPID(double target) {
         angleError = target - getAngle();
         if(Math.abs(angleError) > 0.5)
@@ -43,7 +38,6 @@ public class GyroStuff {
     }
     void resetAngle() {
         myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        globalAngle = 0;
     }
     //reading angle objects z axis
     public double getAngle() {
