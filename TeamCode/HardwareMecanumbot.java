@@ -27,7 +27,7 @@ public class HardwareMecanumbot
     BNO055IMU imu;
     Orientation angle;
     Acceleration gravity;
-    //ColorSensor color_sensor;
+    ColorSensor color_sensor;
     
     // motor declarations
     public DcMotor leftFront  = null;
@@ -39,8 +39,8 @@ public class HardwareMecanumbot
     public DcMotor lift = null;
     
     // motor for arm
-    public CRServo servoArm = null;
-    public Servo servoGrab = null;
+    public Servo servoGrab1 = null;
+    public Servo servoGrab2 = null;
     
     //variables
     private double leftF;
@@ -55,10 +55,6 @@ public class HardwareMecanumbot
     /* Initialize standard Hardware interfaces */
     public void initDrive(LinearOpMode opMode) {
         myOpMode = opMode;
-
-        //encoderState("off");
-        //encoderState("run");
-        //encoderState("reset");
 
         //parameters we're sending to the imu
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -78,14 +74,14 @@ public class HardwareMecanumbot
         intakeLeft  = myOpMode.hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = myOpMode.hardwareMap.get(DcMotor.class, "intake_right");
         lift        = myOpMode.hardwareMap.get(DcMotor.class, "lift");
-        servoArm    = myOpMode.hardwareMap.get(CRServo.class,   "servoArm");
-        servoGrab   = myOpMode.hardwareMap.get(Servo.class,   "servoGrab");
+        servoGrab1  = myOpMode.hardwareMap.get(Servo.class,   "servoGrab1");
+        servoGrab2  = myOpMode.hardwareMap.get(Servo.class,   "servoGrab2");
         
         //init imu
         imu = myOpMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);
-        //color_sensor = myOpMode.hardwareMap.colorSensor.get("color");
-        //color_sensor.enableLed(false);
+        color_sensor = myOpMode.hardwareMap.colorSensor.get("color");
+        color_sensor.enableLed(false);
         
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
