@@ -22,11 +22,10 @@ public class GyroStuff {
     
     //angle variables
     private double globalAngle;
-    double targetAngle = 0;
     double angleError;
     
     //timing
-    private double elaspsedTime, time, timePrev;
+    private double elaspsedTime, time;
     private double period = 1;
     
     //make current heading the zero
@@ -37,13 +36,10 @@ public class GyroStuff {
         time = runtime.seconds();
     }
     public double calcPID(double target) {
-        angleError = target - getGlobalAngle();
-        if(Math.abs(angleError) > 5)
-            return angleError*0.005;
+        angleError = target - getAngle();
+        if(Math.abs(angleError) > 0.5)
+            return Range.clip(angleError/100.0, -0.6, 0.6);
         return 0;
-    }
-    public double getError(double target){
-        return target - getGlobalAngle();
     }
     void resetAngle() {
         myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -53,11 +49,5 @@ public class GyroStuff {
     public double getAngle() {
         myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         return myRobot.angle.firstAngle;
-    }
-    //converting heading to global angle
-    double getGlobalAngle() {
-        myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        globalAngle = (myRobot.angle.firstAngle+360)%360;
-        return globalAngle;
     }
 }
