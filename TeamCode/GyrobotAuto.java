@@ -50,11 +50,11 @@ public class GyrobotAuto extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-        sleep(1000);     // pause for servos to move
+        sleep(1000); // pause for servos to move
 
-        while (isStarted()) {
-            //CONVENTIONS USED COUNTERCLOCKWISE IS NEGATIVE TURN ----- CLOCKWISE IS POSITIVE TURN
-            robot.moveLateral(0, gyro.calcPID(0), 0, 0);
+        while (opModeIsActive() && !isStopRequested()) {
+            //turnToTarget(0);
+            driveStraight(0, 0.2);
             
             telemetry.addData("Status", "Resetting Encoders");
             telemetry.addData("pidcalc", "%.2f", gyro.calcPID(0));
@@ -64,4 +64,13 @@ public class GyrobotAuto extends LinearOpMode {
         telemetry.addData("Path", "Complete");
         telemetry.update();
     }
+    public void turnToTarget(double target) {
+        //calculates the PID and moves to target angle
+        robot.moveLateral(0, -gyro.calcPID(target), 0, 0);
+    }
+    public void driveStraight(double target, double speed) {
+        robot.moveLateral(speed, -gyro.calcPID(target), 0, 0);
+    }
+    public void driveWithCorrection() {}
+    
 }
