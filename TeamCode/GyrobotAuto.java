@@ -23,16 +23,18 @@ public class GyrobotAuto extends LinearOpMode {
     private ElapsedTime     runtime = new ElapsedTime();
     
     GyroStuff gyro = new GyroStuff();
-
-    static final double     COUNTS_PER_MOTOR_REV    = 383.6 ;    // eg: TETRIX Motor Encoder
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_INCHES   = 4.0 ;     // For figuring circumference
-    static final double     BIAS                    = 0.5 ;
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-                                                      (WHEEL_DIAMETER_INCHES * 3.1415);
-    static final double     DRIVE_SPEED             = 0.6;
-    static final double     TURN_SPEED              = 0.5;
-
+	
+    //width = 18.0; //inches
+    //cpr = 383.6; //counts per rotation
+	//gearratio = 13.7;
+    //diameter = 3.937;
+    //cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, cpr * gear ratio / (2 * pi * diameter)
+    //bias = 0.205;
+    Double conversion = 87.12;
+    
+    // meccyBias = 0.21;//change to adjust only strafing movement
+    Double straifConv = 89.245;
+	
     @Override
     public void runOpMode() {
 
