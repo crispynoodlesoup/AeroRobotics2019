@@ -168,12 +168,12 @@ public class BlueColorSensorAuto extends LinearOpMode {
                 else
                         r = 1;
                 //
-                straifStraight(0,speed);
+                straifStraight(0, speed, r);
                 //
                 while (robot.leftRear.isBusy() || robot.rightFront.isBusy() || robot.leftFront.isBusy() || robot.rightRear.isBusy()){
                         speed *= 0.954 + (inches * 0.0008);
                         speed = Range.clip(speed, 0.05, 0.999999);
-                        straifStraight(0,speed);
+                        straifStraight(0, speed, r);
                         telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
                         telemetry.update();
                 }
