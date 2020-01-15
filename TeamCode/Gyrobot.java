@@ -24,8 +24,8 @@ import java.util.Locale;
  * TeleOp for gyrobot with servo and intake system
  */
 
-@TeleOp(name="Gyrobot", group="Linear Opmode")
-public class Gyrobot extends LinearOpMode {
+@TeleOp(name="Gyrobot2Controller", group="Linear Opmode")
+public class Gyrobot2Controller extends LinearOpMode {
 
     // Declare runtime
     private ElapsedTime runtime = new ElapsedTime();
@@ -35,6 +35,8 @@ public class Gyrobot extends LinearOpMode {
     Orientation angle;
     Acceleration gravity;
     
+    GyroStuff gyro = new GyroStuff();
+    
     //Declare hardware variables
     private DcMotor leftFront   = null;
     private DcMotor rightFront  = null;
@@ -43,8 +45,9 @@ public class Gyrobot extends LinearOpMode {
     private DcMotor intakeLeft  = null;
     private DcMotor intakeRight = null;
     private DcMotor lift        = null;
-    private CRServo servoArm    = null;
-    private Servo   servoGrab   = null;
+    private Servo   servoArm    = null;
+    private Servo   servoGrab1  = null;
+    private Servo   servoGrab2  = null;
     
     //init variables for movement
     private double forward;
@@ -87,8 +90,9 @@ public class Gyrobot extends LinearOpMode {
         intakeLeft  = hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = hardwareMap.get(DcMotor.class, "intake_right");
         lift        = hardwareMap.get(DcMotor.class, "lift");
-        servoArm    = hardwareMap.get(CRServo.class, "servoArm");
-        servoGrab   = hardwareMap.get(Servo.class,   "servoGrab");
+        servoArm    = hardwareMap.get(Servo.class,   "servoArm");
+        servoGrab1  = hardwareMap.get(Servo.class,   "servoGrab1");
+        servoGrab2  = hardwareMap.get(Servo.class,   "servoGrab2");
         
         lift.setTargetPosition(lift.getCurrentPosition());
         //set all motors to work with encoders
@@ -117,12 +121,13 @@ public class Gyrobot extends LinearOpMode {
         intakeRight.setDirection(DcMotor.Direction.REVERSE);
         lift.setDirection(DcMotor.Direction.FORWARD);
         
-        //set arm to 0 at initialization
-        servoGrab.setPosition(1);
+        //set arm at initialization position
+        servoGrab1.setPosition(1);
+        servoGrab2.setPosition(0.6);
         
         //setup telemetry
         setupTelemetry();
-
+        
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -133,8 +138,8 @@ public class Gyrobot extends LinearOpMode {
             forward   = -gamepad1.left_stick_y;
             turn      = gamepad1.right_stick_x;
             strafe    = gamepad1.left_stick_x;
-            grabPrev = grab;
-            grab     = gamepad1.a;
+            grabPrev  = grab;
+            grab      = gamepad2.a;
             varSneak  = gamepad1.right_trigger;
             
             //logic for toggleSneak, if stick is pressed invert
@@ -142,34 +147,43 @@ public class Gyrobot extends LinearOpMode {
                 toggleGrab = !toggleGrab;
             
             //all lateral movement
-            moveLateral(forward, turn, strafe, varSneak);
             
-            lift(gamepad1.dpad_up, gamepad1.dpad_down);
+            lift(gamepad2.dpad_up, gamepad2.dpad_down);
             
             //code for intake
             suck   = gamepad1.left_bumper;
             unsuck = gamepad1.right_bumper;
             intake(suck, unsuck);
-
-            //basically all the code for servo lol
-            if(gamepad1.dpad_right && !gamepad1.dpad_left)
-                servoArm.setPower(-0.5);
-            else if(gamepad1.dpad_left && !gamepad1.dpad_right)
-                servoArm.setPower(0.5);
-            else
-                servoArm.setPower(0);
             
-            if(toggleGrab)
-                servoGrab.setPosition(0.9);
+            //basically all the code for servo
+            if(toggleGrab) {
+                servoGrab1.setPosition(0.8);
+                servoGrab2.setPosition(0.8);
+            } else {
+                servoGrab1.setPosition(0.5);
+                servoGrab2.setPosition(1);
+            }
+            
+            if(gamepad1.dpad_down)
+                moveLateral(forward, calcPID(0), strafe, varSneak);
+            else if(gamepad1.dpad_right)
+                moveLateral(forward, calcPID(90), strafe, varSneak);
+            else if(gamepad1.dpad_up)
+                moveLateral(forward, calcPID(180), strafe, varSneak);
+            else if(gamepad1.dpad_left)
+                moveLateral(forward, calcPID(270), strafe, varSneak);
             else
-                servoGrab.setPosition(1);
+                moveLateral(forward, turn, strafe, varSneak);
+            
+            servoArm.setPosition(Range.clip(gamepad1.left_trigger, 0.35, 0.95));
             
             //get global angle
             angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             globalAngle = (angle.firstAngle+360)%360;
             
             // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", lift.getCurrentPosition());
+            telemetry.addData("lift:", lift.getCurrentPosition());
+            telemetry.addData("servoArm:", servoArm.getPosition());
             telemetry.update();
         }
     }
@@ -195,13 +209,13 @@ public class Gyrobot extends LinearOpMode {
     }
     public void lift(boolean up, boolean down) {
         if(up && !down) {
-            lift.setTargetPosition(lift.getCurrentPosition() - 100);
+            lift.setTargetPosition(lift.getCurrentPosition() - 1000);
             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             lift.setPower(1);
             //while(lift.isBusy()){}
         }
         else if(down && !up) {
-            lift.setTargetPosition(lift.getCurrentPosition() + 100);
+            lift.setTargetPosition(lift.getCurrentPosition() + 1000);
             lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             lift.setPower(1);
             //while(lift.isBusy()){}
@@ -266,5 +280,19 @@ public class Gyrobot extends LinearOpMode {
 
     String formatDegrees(double degrees){
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+    public double calcPID(double target) {
+        double angleError = target - getAngle();
+        if(Math.abs(angleError) > 0.5)
+            return Range.clip(angleError/120.0, -0.66, 0.66)*1.5;
+        return 0;
+    }
+    void resetAngle() {
+        //myRobot.angle = myRobot.imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+    }
+    //reading angle objects z axis
+    public double getAngle() {
+        angle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        return angle.firstAngle;
     }
 }
