@@ -29,6 +29,8 @@ public class BlueColorSensorAuto extends LinearOpMode {
         
         int colorOffset  = 0;
         
+        int r; 
+        
         Boolean exit = false;
         double redSide = -1.0;
         ElapsedTime runtime = new ElapsedTime();
@@ -101,12 +103,17 @@ public class BlueColorSensorAuto extends LinearOpMode {
                 robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //
-                driveStraight(0,speed);
+                if(inches < 0)
+                        r = -1;
+                else
+                        r = 1;
+                //
+                driveStraight(0,speed,r);
                 //
                 while (robot.leftRear.isBusy() || robot.leftFront.isBusy() || robot.rightFront.isBusy() || robot.rightRear.isBusy()){
-                        speed *= 0.992 + (inches * 0.00001);
-                        speed = Range.clip(speed, 0, 0.999999);
-                        driveStraight(0,speed);
+                        speed *= 0.954 + (inches * 0.0008);
+                        speed = Range.clip(speed, 0.05, 0.999999);
+                        driveStraight(0,speed,r);
                         telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
                         telemetry.addData("red", "%d", robot.color.red());
                         telemetry.addData("green", "%d", robot.color.green());
@@ -156,14 +163,18 @@ public class BlueColorSensorAuto extends LinearOpMode {
                 robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 //
+                if(inches < 0)
+                        r = -1;
+                else
+                        r = 1;
+                //
                 straifStraight(0,speed);
                 //
                 while (robot.leftRear.isBusy() || robot.rightFront.isBusy() || robot.leftFront.isBusy() || robot.rightRear.isBusy()){
-                        speed *= 0.992 + (inches * 0.00001);
-                        speed = Range.clip(speed, 0, 0.999999);
+                        speed *= 0.954 + (inches * 0.0008);
+                        speed = Range.clip(speed, 0.05, 0.999999);
                         straifStraight(0,speed);
                         telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
-                        robot.
                         telemetry.update();
                 }
                 //
@@ -190,11 +201,11 @@ public class BlueColorSensorAuto extends LinearOpMode {
                 //calculates the PID and moves to target angle
                 robot.moveLateral(0, -gyro.calcPID(target), 0, 0);
         }
-        public void driveStraight(double target, double speed) {
-                robot.moveLateral(speed, -gyro.calcPID(target), 0, 0);
+        public void driveStraight(double target, double speed, int reverse) {
+                robot.moveLateral(speed, -gyro.calcPID(target)*reverse, 0, 0);
         }
-        public void straifStraight(double target, double speed) {
-                robot.moveLateral(0, -gyro.calcPID(target), speed, 0);
+        public void straifStraight(double target, double speed, int reverse) {
+                robot.moveLateral(0, gyro.calcPID(target)*reverse, speed, 0);
         }
         public void scanColor() {
                 int cnt = 0;
@@ -211,3 +222,5 @@ public class BlueColorSensorAuto extends LinearOpMode {
                 }
         }
 }
+
+
