@@ -31,7 +31,11 @@ public class GyroStuff {
     }
     
     public double calcPID(double target) {
-        angleError = target - getAngle();
+        angleError = getAngle() - target;
+        while(angleError > 180)
+            angleError -= 360;
+        while(angleError < -180)
+            angleError += 360;
         if(Math.abs(angleError) > 0.5)
             return Range.clip(angleError/100.0, -0.6, 0.6);
         return 0;
