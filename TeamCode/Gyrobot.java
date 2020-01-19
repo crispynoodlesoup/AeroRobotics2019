@@ -66,6 +66,12 @@ public class Gyrobot2Controller extends LinearOpMode {
     private boolean suck;
     private boolean unsuck;
     private double globalAngle;
+    private int neg1 = 1;
+    private int neg2 = 1;
+    private int neg3 = 1;
+    private double tan;
+    private double poly;
+    private double correction;
     
     @Override
     public void runOpMode() {
@@ -188,6 +194,29 @@ public class Gyrobot2Controller extends LinearOpMode {
         }
     }
     public void moveLateral(double f, double t, double s, double vs) {
+            //code for calculating controller correction values
+            if(s < 0)
+            neg2 = -1;
+            if(f < 0)
+                neg1 = -1;
+            if(s == 0) {
+                s = 0.00001;
+            }
+            if(f == 0) {
+                f = 0.00001;
+            }
+        
+            if(s > f)
+               tan = f/s;
+            else
+                tan = s/f;
+            poly  = neg2*neg1/(1/tan + 1*neg1*neg2);
+            if(poly < 0)
+                neg3 = -1;
+            correction = Math.sqrt((Math.pow((1*neg3-poly*neg3), 2) + Math.pow(poly, 2))/(Math.pow(tan, 2) + 1));
+            f *= correction;
+            s *= correction;
+        
             //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
             leftF  = f + t + s;
             rightF = f - t - s;
