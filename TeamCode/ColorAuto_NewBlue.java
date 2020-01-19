@@ -28,6 +28,7 @@ public class BlueColorSensorAuto extends LinearOpMode {
         int straifConv = 89;
         
         int colorOffset  = 0;
+        int colorOffset2 = 0;
         
         int r; 
         
@@ -120,35 +121,11 @@ public class BlueColorSensorAuto extends LinearOpMode {
                         telemetry.addData("blue", "%d", robot.color.blue());
                         telemetry.update();
                 }
-                //
-                while (gyro.calcPID(0) > 0.12){
-                robot.moveLateral(0, -gyro.calcPID(0), 0, 0);
-                telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
-                telemetry.addData("red", "%d", robot.color.red());
-                telemetry.addData("green", "%d", robot.color.green());
-                telemetry.addData("blue", "%d", robot.color.blue());
-                telemetry.update();
-                }
                 robot.leftFront.setPower(0);
                 robot.rightFront.setPower(0);
                 robot.leftRear.setPower(0);
                 robot.rightRear.setPower(0);
                 }
-        public void turnWithGyro(double degrees,double time){
-                runtime.reset(); 
-                /*while(gyro.getError(degrees)>2 || runtime.seconds() > time){
-                        double spin = gyro.calcPID(degrees);
-
-                        // normalize all motor speeds so no values exceeds 100%.
-                        spin = Range.clip(spin, -1, 1);
-
-                        // Set drive motor power levels.
-                        robot.leftFront.setPower(spin);
-                        robot.rightFront.setPower(spin);
-                        robot.leftRear.setPower(spin);
-                        robot.rightRear.setPower(spin);
-                }*/
-        }
         public void strafeToPosition(double inches, double speed){
                 //
                 int move = (int)(Math.round(inches * straifConv));
@@ -204,9 +181,6 @@ public class BlueColorSensorAuto extends LinearOpMode {
         public void driveStraight(double target, double speed, int reverse) {
                 robot.moveLateral(speed, -gyro.calcPID(target)*reverse, 0, 0);
         }
-        public void straifStraight(double target, double speed, int reverse) {
-                robot.moveLateral(0, gyro.calcPID(target)*reverse, speed, 0);
-        }
         public void scanColor() {
                 int cnt = 0;
                 while(robot.color.red() + robot.color.green() > 45 && cnt < 3){
@@ -220,7 +194,8 @@ public class BlueColorSensorAuto extends LinearOpMode {
                         telemetry.update();
                         cnt += 1;
                 }
-                if
+                if(cnt == 0)
+                        colorOffset2 = 28;
         }
 }
 
