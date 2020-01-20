@@ -143,15 +143,15 @@ public class HardwareMecanumbot
     }
     public void lift(boolean up, boolean down) {
         if(up && !down) {
-            lift.setTargetPosition(lift.getCurrentPosition() - 25);
-            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            lift.setPower(1);
+            //lift.setTargetPosition(lift.getCurrentPosition() - 25);
+            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(-0.5);
             //while(lift.isBusy()){}
         }
         else if(down && !up) {
-            lift.setTargetPosition(lift.getCurrentPosition() + 25);
-            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            lift.setPower(1);
+            //lift.setTargetPosition(lift.getCurrentPosition() + 25);
+            //lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            lift.setPower(0.5);
             //while(lift.isBusy()){}
         } else {
             lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
