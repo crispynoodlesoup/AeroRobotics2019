@@ -106,6 +106,7 @@ public class HardwareMecanumbot
         rightRear.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         intakeRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void moveLateral(double f, double t, double s, double vs) {
             //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
@@ -153,9 +154,8 @@ public class HardwareMecanumbot
             lift.setPower(1);
             //while(lift.isBusy()){}
         } else {
-            lift.setTargetPosition(lift.getCurrentPosition());
-            lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            lift.setPower(1);
+            lift.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            lift.setPower(0);
             //while(lift.isBusy()){}
         }
     }
