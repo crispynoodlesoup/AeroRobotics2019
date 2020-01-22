@@ -224,6 +224,9 @@ public class Gyrobot2Controller extends LinearOpMode {
             f *= correction;
             s *= correction;
         
+            correction = Math.abs(t);
+            t *= correction;
+        
             //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
             leftF  = f + t + s;
             rightF = f - t - s;
