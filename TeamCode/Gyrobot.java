@@ -66,6 +66,7 @@ public class Gyrobot2Controller extends LinearOpMode {
     private boolean suck;
     private boolean unsuck;
     private double globalAngle;
+    private double pid;
     private int neg1 = 1;
     private int neg2 = 1;
     private int neg3 = 1;
@@ -170,16 +171,22 @@ public class Gyrobot2Controller extends LinearOpMode {
                 servoGrab2.setPosition(1);
             }
             
-            if(gamepad1.dpad_down)
-                moveLateral(forward, calcPID(0), strafe, varSneak);
-            else if(gamepad1.dpad_right)
-                moveLateral(forward, calcPID(90), strafe, varSneak);
-            else if(gamepad1.dpad_up)
-                moveLateral(forward, calcPID(180), strafe, varSneak);
-            else if(gamepad1.dpad_left)
-                moveLateral(forward, calcPID(270), strafe, varSneak);
-            else
+            if(gamepad1.dpad_right) {
+                moveLateral(forward, -calcPID(0), strafe, varSneak);
+                telemetry.addData("calcPID:", calcPID(0));
+            } else if(gamepad1.dpad_up) {
+                moveLateral(forward, -calcPID(90), strafe, varSneak);
+                telemetry.addData("calcPID:", calcPID(90));
+            } else if(gamepad1.dpad_left) {
+                moveLateral(forward, -calcPID(179), strafe, varSneak);
+                telemetry.addData("calcPID:", calcPID(179.9));
+            } else if(gamepad1.dpad_down) {
+                moveLateral(forward, -calcPID(-90), strafe, varSneak);
+                telemetry.addData("calcPID:", calcPID(-90));
+            } else {
                 moveLateral(forward, turn, strafe, varSneak);
+                telemetry.addData("calcPID:", calcPID(0));
+            }
             
             servoArm.setPosition(Range.clip(gamepad1.left_trigger, 0.35, 0.95));
             
@@ -188,12 +195,11 @@ public class Gyrobot2Controller extends LinearOpMode {
             globalAngle = (angle.firstAngle+360)%360;
             
             // Show the elapsed game time and wheel power.
-            telemetry.addData("lift:", lift.getCurrentPosition());
-            telemetry.addData("servoArm:", servoArm.getPosition());
             telemetry.update();
         }
     }
     public void moveLateral(double f, double t, double s, double vs) {
+            //controller correction code
             neg1 = 1;
             neg2 = 1;
             neg3 = 1;
@@ -220,13 +226,11 @@ public class Gyrobot2Controller extends LinearOpMode {
             correction = Math.sqrt((Math.pow((1*neg3-poly*neg3), 2) + Math.pow(poly, 2))/(Math.pow(tan, 2) + 1));
             f *= correction;
             s *= correction;
-            correction = Math.abs(f+s);
-            f *= correction;
-            s *= correction;
+            
         
             correction = Math.abs(t);
             t *= correction;
-        
+            
             //math for mecanum wheels 'f' = forward, 't' = turn, 's' = strafe
             leftF  = f + t + s;
             rightF = f - t - s;
@@ -245,6 +249,9 @@ public class Gyrobot2Controller extends LinearOpMode {
             rightFront.setPower(rightF);
             leftRear.setPower(leftR);
             rightRear.setPower(rightR);
+            
+            telemetry.addData("f:", f);
+            telemetry.addData("s:", s);
     }
     public void lift(boolean up, boolean down) {
         if(up && !down) {
@@ -322,8 +329,12 @@ public class Gyrobot2Controller extends LinearOpMode {
     }
     public double calcPID(double target) {
         double angleError = target - getAngle();
+        if(angleError < -180)
+            angleError += 360;
+        if(angleError > 180)
+            angleError -= 360;
         if(Math.abs(angleError) > 0.5)
-            return Range.clip(angleError/120.0, -0.66, 0.66)*1.5;
+            return Range.clip(angleError/30.0, -1, 1);
         return 0;
     }
     void resetAngle() {
