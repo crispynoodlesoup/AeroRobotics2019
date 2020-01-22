@@ -194,19 +194,23 @@ public class Gyrobot2Controller extends LinearOpMode {
         }
     }
     public void moveLateral(double f, double t, double s, double vs) {
+            neg1 = 1;
+            neg2 = 1;
+            neg3 = 1;
+        
             //code for calculating controller correction values
             if(s < 0)
-            neg2 = -1;
+                neg2 = -1;
             if(f < 0)
                 neg1 = -1;
             if(s == 0) {
-                s = 0.00001;
+                s = 0.0000001;
             }
             if(f == 0) {
-                f = 0.00001;
+                f = 0.0000001;
             }
         
-            if(s > f)
+            if(Math.abs(s) > Math.abs(f))
                tan = f/s;
             else
                 tan = s/f;
@@ -214,6 +218,9 @@ public class Gyrobot2Controller extends LinearOpMode {
             if(poly < 0)
                 neg3 = -1;
             correction = Math.sqrt((Math.pow((1*neg3-poly*neg3), 2) + Math.pow(poly, 2))/(Math.pow(tan, 2) + 1));
+            f *= correction;
+            s *= correction;
+            correction = Math.abs(f+s);
             f *= correction;
             s *= correction;
         
