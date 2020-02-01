@@ -36,11 +36,14 @@ public class HardwareMecanumbot
     public DcMotor rightRear  = null;
     public DcMotor intakeLeft = null;
     public DcMotor intakeRight = null;
+    public DcMotor liftBlock = null;
     public DcMotor lift = null;
     
     // motor for arm
     public Servo servoGrab1 = null;
     public Servo servoGrab2 = null;
+    public Servo servoTray1 = null;
+    public Servo servoTray2 = null;
     
     //variables
     private double leftF;
@@ -49,8 +52,7 @@ public class HardwareMecanumbot
     private double rightR;
     private int neg = 1;
 
-    public HardwareMecanumbot(){
-    }
+    public HardwareMecanumbot() {}
     
     /* Initialize standard Hardware interfaces */
     public void initDrive(LinearOpMode opMode) {
@@ -73,9 +75,12 @@ public class HardwareMecanumbot
         rightRear   = myOpMode.hardwareMap.get(DcMotor.class, "right_rear");
         intakeLeft  = myOpMode.hardwareMap.get(DcMotor.class, "intake_left");
         intakeRight = myOpMode.hardwareMap.get(DcMotor.class, "intake_right");
+        liftBlock   = myOpMode.hardwareMap.get(DcMotor.class, "liftBlock");
         lift        = myOpMode.hardwareMap.get(DcMotor.class, "lift");
         servoGrab1  = myOpMode.hardwareMap.get(Servo.class,   "servoGrab1");
         servoGrab2  = myOpMode.hardwareMap.get(Servo.class,   "servoGrab2");
+        servoTray1  = myOpMode.hardwareMap.get(Servo.class,   "servoTray1");
+        servoTray2  = myOpMode.hardwareMap.get(Servo.class,   "servoTray2");
         
         //init imu
         imu = myOpMode.hardwareMap.get(BNO055IMU.class, "imu");
@@ -98,6 +103,8 @@ public class HardwareMecanumbot
         leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODERS);
         
         //brake the motors
         leftFront.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -176,6 +183,15 @@ public class HardwareMecanumbot
         } else {
             intakeLeft.setPower(0.0);
             intakeRight.setPower(0.0);
+        }
+    }
+    public void eatTray(boolean close) {
+        if(close) {
+            servoTray1.setPosition(1);
+            servoTray2.setPosition(0);
+        } else {
+            servoTray1.setPosition(0.6);
+            servoTray2.setPosition(0.7);
         }
     }
     public void encoderState(String a){
