@@ -14,14 +14,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="RedColorSensorAuto", group="generated")
+@Autonomous(name="SkystoneRed", group="generated")
 public class ColorAuto_Red extends LinearOpMode {
-        //width = 18.0; //inches
-        //cpr = 383.6; //counts per rotation
-        //gearratio = 13.7;
-        //diameter = 3.937;
-        //cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, cpr * gear ratio / (2 * pi * diameter)
-        //bias = 0.205;
+        //conversion from encoder ticks to inches
         int conversion = 89;
         
         int colorOffset  = 0;
@@ -40,8 +35,6 @@ public class ColorAuto_Red extends LinearOpMode {
                 robot.initDrive(this);
                 gyro.initDrive(robot);
                 
-                //robot.liftPos(17000);
-                //sleep(500);
                 robot.servoGrab1.setPosition(1);
                 robot.servoGrab2.setPosition(0.6);
                 robot.servoArm.setPosition(0.3);
@@ -71,12 +64,12 @@ public class ColorAuto_Red extends LinearOpMode {
                 robot.servoArm.setPosition(0.95);
                 sleep(600);
                 strafeToPosition(9.5, 1);
-                moveToPosition(36.0*redSide - colorOffset3*redSide, 1);
+                moveToPosition(38.0*redSide - colorOffset3*redSide, 1);
                 robot.servoArm.setPosition(0.3);
                 sleep(200);
                 //park
                 moveToPosition(-11.0*redSide, 1);
-                strafeToPosition(-5.0, 1);
+                strafeToPosition(-4.0, 1);
                 }
         public void moveToPosition(double inches, double speed){
                 int move  = (int)(Math.round(inches * conversion)) + 30;
