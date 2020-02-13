@@ -16,17 +16,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 @Autonomous(name="RedColorSensorAutoDos", group="generated")
 public class ColorAuto_Red2 extends LinearOpMode {
-        //width = 18.0; //inches
-        //cpr = 383.6; //counts per rotation
-        //gearratio = 13.7;
-        //diameter = 3.937;
-        //cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, cpr * gear ratio / (2 * pi * diameter)
-        //bias = 0.205;
+        //conversion from encoder ticks to inches
         int conversion = 89;
         
         int colorOffset  = 0;
         int colorOffset2 = 0;
-        int colorOffset3 = 0;
         
         int r;
         
@@ -49,17 +43,16 @@ public class ColorAuto_Red2 extends LinearOpMode {
                 //
                 waitForStart();
                 //take a skystone
-                strafeToPosition(-32, 1, 0);
+                strafeToPosition(-31.5, 1, 0);
                 scanColor();
-                strafeToPosition(-1.5, 1, 0);
                 robot.servoArm.setPosition(0.95);
                 sleep(600);
-                //murder the tray!
                 strafeToPosition(8, 1, 0);
                 turnToTarget(90);
                 strafeToPosition(80*redSide + colorOffset*redSide, 1, 90);
                 robot.servoArm.setPosition(0.3);
-                sleep(600);
+                sleep(200);
+                //eat the tray!
                 moveToPosition(6.0*redSide + colorOffset2*redSide, 0.5, 90);
                 robot.eatTray(true);
                 sleep(800);
@@ -204,17 +197,11 @@ public class ColorAuto_Red2 extends LinearOpMode {
                 }
                 turnToTarget(target);
         }
-        public void liftPos(int pos) {
-                robot.lift.setTargetPosition(pos);
-                robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.lift.setPower(1);
-                while(robot.lift.isBusy()){}
-        }
         public void driveStraight(double target, double speed, int reverse) {
-                robot.moveLateral(speed, -gyro.calcPID(target)*reverse, 0, 0);
+                robot.moveLateral(speed, -gyro.calcPID(target)*reverse*6.5*Math.pow(speed,1.25), 0, 0);
         }
         public void straifStraight(double target, double speed, int reverse) {
-                robot.moveLateral(0, -gyro.calcPID(target)*reverse, speed, 0);
+                robot.moveLateral(0, -gyro.calcPID(target)*reverse*12*speed, speed, 0);
         }
         public void scanColor() {
                 int cnt = 0;
@@ -230,6 +217,6 @@ public class ColorAuto_Red2 extends LinearOpMode {
                         telemetry.update();
                 }
                 if(cnt == 0)
-                        colorOffset2 = -29;
+                        colorOffset2 = -32;
         }
 }
