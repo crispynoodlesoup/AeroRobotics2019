@@ -42,6 +42,7 @@ public class ColorAuto_Red2 extends LinearOpMode {
                 robot.eatTray(false);
                 //
                 waitForStart();
+                
                 //take a skystone
                 strafeToPosition(-31.5, 1, 0);
                 scanColor();
@@ -52,10 +53,13 @@ public class ColorAuto_Red2 extends LinearOpMode {
                 strafeToPosition(80*redSide + colorOffset*redSide, 1, 90);
                 robot.servoArm.setPosition(0.3);
                 sleep(200);
+                
                 //eat the tray!
-                moveToPosition(6.0*redSide + colorOffset2*redSide, 0.5, 90);
+                moveToPosition(5.0 + colorOffset2*redSide, 0.5, 90);
                 robot.eatTray(true);
                 sleep(800);
+                
+                /* code to go halfway and turn tray 180
                 moveToPosition(-18, 1.0, 90);
                 turnToTarget(-95);
                 robot.liftPos(-5000);
@@ -65,6 +69,14 @@ public class ColorAuto_Red2 extends LinearOpMode {
                 robot.eatTray(true);
                 moveToPosition(2.0, 1.0, -90);
                 sleep(3000);
+                */
+                
+                moveToPosition(-30, 1, 90);
+                strafeToPosition(-6, 1, 70);
+                robot.eatTray(false);
+                sleep(800);
+                moveToPosition(-30, 1, 90);
+                strafeToPosition(-20, 1, 90);
                 }
         public void moveToPosition(double inches, double speed, double target){
                 int move  = (int)(Math.round(inches * conversion)) + 30;
