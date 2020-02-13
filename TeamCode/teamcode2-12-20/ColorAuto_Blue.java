@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@Autonomous(name="BlueColorSensorAuto", group="generated")
+@Autonomous(name="SkystoneBlue", group="generated")
 public class ColorAuto_Blue extends LinearOpMode {
         //width = 18.0; //inches
         //cpr = 383.6; //counts per rotation
@@ -22,13 +22,11 @@ public class ColorAuto_Blue extends LinearOpMode {
         //diameter = 3.937;
         //cpi = (cpr * gearratio)/(Math.PI * diameter); //counts per inch, cpr * gear ratio / (2 * pi * diameter)
         //bias = 0.205;
-        int conversion = 88;
-        
-        // meccyBias = 0.21;//change to adjust only strafing movement
-        int straifConv = 89;
+        int conversion = 89;
         
         int colorOffset  = 0;
         int colorOffset2 = 0;
+        int colorOffset3 = -8;
         
         int r;
         
@@ -46,56 +44,46 @@ public class ColorAuto_Blue extends LinearOpMode {
                 //sleep(500);
                 robot.servoGrab1.setPosition(1);
                 robot.servoGrab2.setPosition(0.6);
-                robot.servoArm.setPosition(0.4);
+                robot.servoArm.setPosition(0.3);
                 //
                 waitForStart();
-                //
-                strafeToPosition(-32.5, 0.95);
-                //
+                //go for first block
+                strafeToPosition(-31.5, 1);
                 scanColor();
-                //
-                moveToPosition(-5.5*redSide, 0.7);
-                //
-                strafeToPosition(-2.0, 0.5);
-                //
                 robot.servoArm.setPosition(0.95);
-                //
                 sleep(600);
-                //
-                strafeToPosition(10, 0.9);
-                //
-                moveToPosition(50.5*redSide + colorOffset*redSide, 0.95);
-                //
+                strafeToPosition(8, 1);
+                moveToPosition(44*redSide + colorOffset*redSide, 1);
                 robot.servoArm.setPosition(0.3);
-                //
-                sleep(600);
-                //
-                moveToPosition(-42.0*redSide + colorOffset2*redSide, 0.95);
-                //
-                strafeToPosition(-13.5, 0.8);
-                //
+                sleep(200);
+                //go for second block
+                moveToPosition(-36.0*redSide + colorOffset2*redSide, 1);
+                strafeToPosition(-9, 1);
                 robot.servoArm.setPosition(0.95);
-                //
                 sleep(600);
-                //
-                strafeToPosition(12.0, 0.8);
-                //
-                moveToPosition(44.0*redSide - colorOffset2*redSide, 0.95);
-                //uwu
+                strafeToPosition(9.0, 1);
+                moveToPosition(36.0*redSide - colorOffset2*redSide, 1);
                 robot.servoArm.setPosition(0.3);
-                //
+                sleep(200);
+                //go for third block
+                moveToPosition(-38.0*redSide + colorOffset3*redSide, 1);
+                strafeToPosition(-9.5, 1);
+                robot.servoArm.setPosition(0.95);
                 sleep(600);
-                //
-                moveToPosition(-16.0*redSide, 0.9);
-                //
-                strafeToPosition(8.0, 1.0);
+                strafeToPosition(9.5, 1);
+                moveToPosition(38.0*redSide - colorOffset3*redSide, 1);
+                robot.servoArm.setPosition(0.3);
+                sleep(200);
+                //park
+                moveToPosition(-11.0*redSide, 1);
+                strafeToPosition(-4.0, 1);
                 }
         public void moveToPosition(double inches, double speed){
                 int move  = (int)(Math.round(inches * conversion)) + 30;
                 int start = robot.leftFront.getCurrentPosition();
                 int end   = robot.leftFront.getCurrentPosition() + move;
-                int decelInches = (int)Math.abs(Math.round(move * 18/26));
-                decelInches = (int)Range.clip(decelInches, 0, 1800);
+                int decelInches = (int)Math.abs(Math.round(move * 9/14));
+                decelInches = (int)Range.clip(decelInches, 0, 900);
                 double speedTemp = speed;
                 //
                 robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
@@ -113,20 +101,20 @@ public class ColorAuto_Blue extends LinearOpMode {
                 else
                         r = 1;
                 //
-                if(Math.abs(robot.leftFront.getCurrentPosition() - start) < 800) 
-                        speed = (robot.leftFront.getCurrentPosition()*r - start*r)/800.0 + 0.101;
-                speed = Range.clip(speed, 0.1, 1.0);
+                if(Math.abs(robot.leftFront.getCurrentPosition() - start) < 500) 
+                        speed = (robot.leftFront.getCurrentPosition()*r - start*r)/500.0;
+                speed = Range.clip(speed, 0.2, 1.0);
                 driveStraight(0,speed,r);
                 //
                 //while (((robot.leftF + robot.rightF + robot.leftR + robot.rightR)/4.0 > 0.1 || end*r - robot.leftFront.getCurrentPosition()*r > 90) && !isStopRequested()){
                 //while ((robot.leftF + robot.rightF + robot.leftR + robot.rightR)/4.0 > 0.1 && !isStopRequested()){
                 while (end*r - robot.leftFront.getCurrentPosition()*r > 30 && !isStopRequested()){
                         speed = speedTemp;
-                        if(Math.abs(robot.leftFront.getCurrentPosition()*r - start*r) < 800) 
-                                speed = (robot.leftFront.getCurrentPosition()*r - start*r)/800.0 + 0.101;
+                        if(Math.abs(robot.leftFront.getCurrentPosition()*r - start*r) < 500) 
+                                speed = (robot.leftFront.getCurrentPosition()*r - start*r)/500.0 + 0.101;
                         if(Math.abs(end*r - robot.leftFront.getCurrentPosition()*r) < decelInches) 
-                                speed = (end*r - robot.leftFront.getCurrentPosition()*r)/1800.0;
-                        speed = Range.clip(speed, 0.1, 1.0);
+                                speed = (end*r - robot.leftFront.getCurrentPosition()*r)/900.0;
+                        speed = Range.clip(speed, 0.3, 1.0);
                         driveStraight(0,speed,r);
                         telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
                         telemetry.addData("leftF", "%.3f", robot.leftF);
@@ -142,8 +130,8 @@ public class ColorAuto_Blue extends LinearOpMode {
                 int move  = (int)(Math.round(inches * conversion)) + 30;
                 int start = robot.leftFront.getCurrentPosition();
                 int end   = robot.leftFront.getCurrentPosition() + move;
-                int decelInches = (int)Math.abs(Math.round(move * 18/26));
-                decelInches = (int)Range.clip(decelInches, 0, 1800);
+                int decelInches = (int)Math.abs(Math.round(move * 9/14));
+                decelInches = (int)Range.clip(decelInches, 0, 900);
                 double speedTemp = speed;
                 //
                 robot.leftFront.setTargetPosition(robot.leftFront.getCurrentPosition() + move);
@@ -161,20 +149,20 @@ public class ColorAuto_Blue extends LinearOpMode {
                 else
                         r = 1;
                 //
-                if(Math.abs(robot.leftFront.getCurrentPosition() - start) < 800) 
-                        speed = (robot.leftFront.getCurrentPosition()*r - start*r)/800.0 + 0.101;
-                speed = Range.clip(speed, 0.1, 1.0);
+                if(Math.abs(robot.leftFront.getCurrentPosition() - start) < 500) 
+                        speed = (robot.leftFront.getCurrentPosition()*r - start*r)/500.0;
+                speed = Range.clip(speed, 0.2, 1.0);
                 driveStraight(0,speed,r);
                 //
                 //while (((robot.leftF + robot.rightF + robot.leftR + robot.rightR)/4.0 > 0.1 || end*r - robot.leftFront.getCurrentPosition()*r > 90) && !isStopRequested()){
                 //while ((robot.leftF + robot.rightF + robot.leftR + robot.rightR)/4.0 > 0.1 && !isStopRequested()){
                 while (end*r - robot.leftFront.getCurrentPosition()*r > 30 && !isStopRequested()){
                         speed = speedTemp;
-                        if(Math.abs(robot.leftFront.getCurrentPosition()*r - start*r) < 800) 
-                                speed = (robot.leftFront.getCurrentPosition()*r - start*r)/800.0 + 0.101;
+                        if(Math.abs(robot.leftFront.getCurrentPosition()*r - start*r) < 500) 
+                                speed = (robot.leftFront.getCurrentPosition()*r - start*r)/500.0 + 0.101;
                         if(Math.abs(end*r - robot.leftFront.getCurrentPosition()*r) < decelInches) 
-                                speed = (end*r - robot.leftFront.getCurrentPosition()*r)/1800.0;
-                        speed = Range.clip(speed, 0.1, 1.0);
+                                speed = (end*r - robot.leftFront.getCurrentPosition()*r)/900.0;
+                        speed = Range.clip(speed, 0.3, 1.0);
                         driveStraight(0,speed,r);
                         telemetry.addData("pidcalc", "%.3f", gyro.calcPID(0));
                         telemetry.addData("leftF", "%.3f", robot.leftF);
@@ -192,16 +180,15 @@ public class ColorAuto_Blue extends LinearOpMode {
                 robot.leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 robot.rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
                 
-                for(int i = 0; i < 5; i++) {
+                for(int i = 0; i < 2; i++) {
                         robot.moveLateral(0, -gyro.calcPID(target), 0, 0);
                         while (gyro.calcPID(target) != 0 && !isStopRequested()){
                                 robot.moveLateral(0, -gyro.calcPID(target), 0, 0);
                                 telemetry.addData("pidcalc", "%.3f", gyro.calcPID(target));
                                 telemetry.update();
                         }
-                        sleep(20);
+                        sleep(30);
                 }
-                robot.moveLateral(0,0,0,0);
         }
         public void driveArc(double target, double arcLength) {
                 robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -221,19 +208,12 @@ public class ColorAuto_Blue extends LinearOpMode {
                         robot.moveLateral(1, turnSpeed*2*turnDir, 0, 0);
                 }
                 turnToTarget(target);
-                robot.moveLateral(0,0,0,0);
-        }
-        public void liftPos(int pos) {
-                robot.lift.setTargetPosition(pos);
-                robot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                robot.lift.setPower(1);
-                while(robot.lift.isBusy()){}
         }
         public void driveStraight(double target, double speed, int reverse) {
-                robot.moveLateral(speed, -gyro.calcPID(target)*reverse, 0, 0);
+                robot.moveLateral(speed, -gyro.calcPID(target)*reverse*6.5*Math.pow(speed,1.25), 0, 0);
         }
         public void straifStraight(double target, double speed, int reverse) {
-                robot.moveLateral(0, -gyro.calcPID(target)*reverse, speed, 0);
+                robot.moveLateral(0, -gyro.calcPID(target)*reverse*12*speed, speed, 0);
         }
         public void scanColor() {
                 int cnt = 0;
@@ -241,14 +221,16 @@ public class ColorAuto_Blue extends LinearOpMode {
                 while(robot.color.red() > 35 && cnt < 2){
                         colorOffset += 8;
                         cnt += 1;
-                        moveToPosition(-8*redSide, 0.6);
+                        moveToPosition(-8*redSide, 1);
                         telemetry.addData("combined", "%d", robot.color.argb());
                         telemetry.addData("red", "%d", robot.color.red());
                         telemetry.addData("green", "%d", robot.color.green());
                         telemetry.addData("blue", "%d", robot.color.blue());
                         telemetry.update();
                 }
-                if(cnt == 0)
+                if(cnt == 0) {
                         colorOffset2 = -32;
+                        colorOffset3 = 0;
+                }
         }
 }
